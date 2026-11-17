@@ -1,44 +1,63 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Import des pages
+import Login from './pages/auth/Login';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import Profile from './pages/common/Profile';
 import MainLayout from './layouts/MainLayout';
 import Card from './components/Card';
 import Button from './components/Button';
-import { Clock, MapPin } from 'lucide-react';
+
+// --- PAGES FACTICES POUR TESTER LES RÔLES ---
+const StudentDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Étudiant 🎓</h1><p className="mt-2 text-stone-500">Bienvenue sur votre tableau de bord.</p><Button className="mt-4" onClick={() => window.location.href='/profile'}>Mon Profil</Button></MainLayout>;
+const MerchantDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Commerçant 🏪</h1><p className="mt-2 text-stone-500">Gérez vos offres ici.</p></MainLayout>;
+const AdminDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Administrateur 🛡️</h1><p className="mt-2 text-stone-500">Supervision de la plateforme.</p></MainLayout>;
+const Unauthorized = () => <div className="p-10 text-center"><h1 className="text-2xl font-bold text-red-600">Accès Refusé 🚫</h1><p>Vous n'avez pas les permissions pour voir cette page.</p><Button onClick={() => window.location.href='/'} className="mt-4">Retour à l'accueil</Button></div>;
+
+// --- ROUTEUR PRINCIPAL ---
+const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Routes publiques */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+
+      {/* Routes protégées (Tout utilisateur connecté) */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/profile" element={<Profile />} />
+      </Route>
+
+      {/* Routes protégées par Rôle */}
+      <Route element={<ProtectedRoute allowedRoles={['etudiant']} />}>
+        <Route path="/etudiant" element={<StudentDashboard />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={['commercant']} />}>
+        <Route path="/commercant" element={<MerchantDashboard />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Route>
+
+      {/* Redirection par défaut */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+};
 
 function App() {
   return (
-    <MainLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-stone-900">Bonjour, Yasmine 👋</h1>
-        <p className="text-sm text-stone-500 mt-1">Découvrez les invendus du jour autour de l'ESSECT.</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Exemple de Carte */}
-        <Card>
-          <div className="h-40 bg-stone-200 relative">
-            <img 
-              src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" 
-              alt="Plat" 
-              className="w-full h-full object-cover"
-            />
-            <span className="absolute top-2 left-2 bg-terracotta text-white text-xs font-bold px-2 py-1 rounded-lg">-54%</span>
-          </div>
-          <div className="p-4">
-            <h3 className="font-bold text-stone-900">Escalope Grillée & Riz</h3>
-            <p className="text-xs text-orange font-bold mt-1">Bistro Montfleury</p>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-lg font-extrabold text-olive">5,50 DT</span>
-              <span className="text-xs text-stone-400 line-through">12,00 DT</span>
-            </div>
-            <div className="flex items-center gap-3 mt-3 text-xs text-stone-500">
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> 14h - 15h30</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> 120m</span>
-            </div>
-            <Button className="w-full mt-4">Réserver</Button>
-          </div>
-        </Card>
-      </div>
-    </MainLayout>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
