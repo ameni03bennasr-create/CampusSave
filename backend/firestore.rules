@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || role() == 'admin');
+      allow write: if false; // via Functions uniquement
+    }
+
+    match /offres/{id} {
+      allow read: if signedIn();
+      allow create: if role() == 'commercant'
+                    && request.resource.data.commercantId == request.auth.uid;
+      allow update, delete: if role() == 'commercant'
+                    && resource.data.commercantId == request.auth.uid;
+    }
+
+    match /commandes/{id} {
+      allow read: if signedIn() && (resource.data.etudiantId == request.auth.uid
+                  || resource.data.commercantId == request.auth.uid
+                  || role() == 'admin');
+      allow write: if false; // création/statut via Functions
+    }
+
+    match /paiements/{id} {
+      allow read: if signedIn() && resource.data.etudiantId == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /qrcodes/{id} {
+      allow read: if signedIn() && resource.data.etudiantId == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /feedbacks/{id} {
+      allow read: if signedIn();
+      allow create: if role() == 'etudiant'
+                    && request.resource.data.etudiantId == request.auth.uid;
+    }
+
+    match /commandesGroupees/{id} {
+      allow read: if signedIn();
+      allow create: if role() == 'association';
+      allow update: if role() in ['commercant', 'association'];
+    }
+
+    match /stats/{doc} {
+      allow read: if role() == 'admin';
+      allow write: if false;
+    }
+
+    match /suggestionsIA/{id} {
+      allow read: if role() == 'admin';
+      allow write: if false;
+    }
+  }
+}
