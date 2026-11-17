@@ -4,29 +4,42 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
     function role() { return request.auth.token.role; }
+    function isAdmin() { return signedIn() && role() == 'admin'; }
+
+    // Rôles : etudiant | commercant (validé) | commercant_en_attente | association | admin
+    // TOUTES les écritures passent par les Cloud Functions (Admin SDK ignore ces règles).
 
     match /users/{uid} {
-      allow read: if signedIn() && (request.auth.uid == uid || role() == 'admin');
-      allow write: if false; // via Functions uniquement
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
     }
 
+    match /commercants/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /associations/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+
+    // Offres : lecture pour tout utilisateur connecté ;
+    // création / modification / suppression via creerOffre, modifierOffre, supprimerOffre.
     match /offres/{id} {
       allow read: if signedIn();
-      allow create: if role() == 'commercant'
-                    && request.resource.data.commercantId == request.auth.uid;
-      allow update, delete: if role() == 'commercant'
-                    && resource.data.commercantId == request.auth.uid;
+      allow write: if false;
     }
 
     match /commandes/{id} {
       allow read: if signedIn() && (resource.data.etudiantId == request.auth.uid
                   || resource.data.commercantId == request.auth.uid
-                  || role() == 'admin');
-      allow write: if false; // création/statut via Functions
+                  || isAdmin());
+      allow write: if false;
     }
 
     match /paiements/{id} {
-      allow read: if signedIn() && resource.data.etudiantId == request.auth.uid;
+      allow read: if signedIn() && (resource.data.etudiantId == request.auth.uid || isAdmin());
       allow write: if false;
     }
 
@@ -37,23 +50,21 @@ service cloud.firestore {
 
     match /feedbacks/{id} {
       allow read: if signedIn();
-      allow create: if role() == 'etudiant'
-                    && request.resource.data.etudiantId == request.auth.uid;
+      allow write: if false; // via soumettreFeedback
     }
 
     match /commandesGroupees/{id} {
       allow read: if signedIn();
-      allow create: if role() == 'association';
-      allow update: if role() in ['commercant', 'association'];
+      allow write: if false; // via envoyerDemandeGroupee / accepterOuRefuserProposition
     }
 
     match /stats/{doc} {
-      allow read: if role() == 'admin';
+      allow read: if isAdmin();
       allow write: if false;
     }
 
     match /suggestionsIA/{id} {
-      allow read: if role() == 'admin';
+      allow read: if isAdmin();
       allow write: if false;
     }
   }
