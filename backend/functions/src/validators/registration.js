@@ -1,25 +1,6 @@
 const { HttpsError } = require("firebase-functions/v2/https");
-const { ROLES, SELF_REGISTRATION_ROLES } = require("../auth/roles");
-
-function text(value, field, { min = 1, max = 100, required = true } = {}) {
-  if (value === undefined || value === null || value === "") {
-    if (required) {
-      throw new HttpsError("invalid-argument", `Le champ "${field}" est obligatoire.`);
-    }
-    return null;
-  }
-  if (typeof value !== "string") {
-    throw new HttpsError("invalid-argument", `Le champ "${field}" doit être du texte.`);
-  }
-  const clean = value.trim();
-  if (clean.length < min || clean.length > max) {
-    throw new HttpsError(
-      "invalid-argument",
-      `Le champ "${field}" doit contenir entre ${min} et ${max} caractères.`
-    );
-  }
-  return clean;
-}
+const { ROLES, SELF_REGISTRATION_ROLES } = require("../constants/roles");
+const { text } = require("./common");
 
 function phone(value) {
   const clean = text(value, "telephone", { min: 8, max: 20, required: false });
@@ -43,7 +24,7 @@ function validateRegistrationData(data) {
     telephone: phone(data.telephone),
   };
 
-  if (data.role === ROLES.MERCHANT) {
+  if (data.role === ROLES.COMMERCANT) {
     result.nomCommerce = text(data.nomCommerce, "nomCommerce", { min: 2, max: 100 });
     result.adresse = text(data.adresse, "adresse", { min: 5, max: 200 });
     result.specialite = text(data.specialite, "specialite", { min: 2, max: 100 });

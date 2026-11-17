@@ -31,9 +31,8 @@ async function call(name, token, data) {
     process.exit(1);
   }
 
-  // 1) Le commerçant a une offre (créée directement avec l'Admin SDK)
-  const offreRef = await db.collection("offres").add({
-    commercantId: com.localId,
+  // 1) Le commerçant (déjà validé par test-inscription.js) publie une offre via creerOffre
+  const cree = await call("creerOffre", com.idToken, {
     titre: "Panier surprise",
     description: "Invendus du jour",
     prixInitial: 10,
@@ -41,8 +40,10 @@ async function call(name, token, data) {
     quantiteDisponible: 5,
     estSurpriseBasket: true,
     horaireRecuperation: "18h-19h",
-    photo: "",
   });
+  console.log("creerOffre :", JSON.stringify(cree));
+  if (!cree.result?.offreId) process.exit(1);
+  const offreRef = db.doc(`offres/${cree.result.offreId}`);
   console.log("Offre créée :", offreRef.id, "(stock = 5)");
 
   // 2) L'étudiant commande 2 paniers

@@ -38,16 +38,16 @@ async function call(name, token, data) {
 (async () => {
   // 1) Un étudiant
   const e = await signUp("etudiant@test.com");
-  console.log("inscrire étudiant :", await call("inscrire", e.idToken, {
+  console.log("inscription étudiant :", JSON.stringify(await call("completeRegistration", e.idToken, {
     nom: "Ali Ben Salah", telephone: "20111222", role: "etudiant",
-  }));
+  })));
 
   // 2) Un commerçant
   const c = await signUp("commercant@test.com");
-  console.log("inscrire commerçant :", await call("inscrire", c.idToken, {
+  console.log("inscription commerçant (attendu : commercant_en_attente) :", JSON.stringify(await call("completeRegistration", c.idToken, {
     nom: "Sami", telephone: "20333444", role: "commercant",
-    extra: { nomCommerce: "Boulangerie Salam", specialite: "Pain", adresse: "Tunis", description: "Pain frais", logo: "" },
-  }));
+    nomCommerce: "Boulangerie Salam", specialite: "Pain", adresse: "12 rue de Tunis", description: "Pain frais",
+  })));
 
   // 3) Un admin (rôle donné à la main)
   const a = await signUp("admin@test.com");
@@ -56,5 +56,5 @@ async function call(name, token, data) {
 
   // 4) L'admin valide le commerçant (il faut un nouveau token pour avoir le rôle)
   const aTok = (await signIn("admin@test.com")).idToken;
-  console.log("valider commerçant :", await call("validerCommercant", aTok, { commercantId: c.localId }));
+  console.log("valider commerçant :", JSON.stringify(await call("validerCommercant", aTok, { commercantId: c.localId })));
 })();
