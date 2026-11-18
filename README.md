@@ -1,9 +1,14 @@
-<img width="1536" height="1024" alt="WhatsApp Image 2026-11-17 at 14 43 49" src="https://github.com/user-attachments/assets/59509ce5-126a-4c41-b803-25ac0d8e2fc5" />
+<p align="center">
+  <img src="documentation/maquettes/logo.jpg" alt="Logo CampusSave" width="230"/>
+</p>
 
-# 🥗 CampusSave — Plateforme intelligente de lutte contre le gaspillage alimentaire
+<p align="center">
+  <img src="https://img.shields.io/badge/ESSECT-Business%20Computing-556B2F?style=for-the-badge&logoColor=white" alt="ESSECT"/>
+  <img src="https://img.shields.io/badge/Statut-En%20Développement-D2691E?style=for-the-badge&logoColor=white" alt="Statut"/>
+  <img src="https://img.shields.io/badge/Date%20limite-25%20Nov%202026-8B4513?style=for-the-badge&logoColor=white" alt="Deadline"/>
+</p>
 
-**Projet pédagogique intégrateur — 3ème année Business Computing / E-Business (ESSECT)**  
-**Date limite de dépôt :** 25 novembre 2026 à minuit (00h00)
+<h3 align="center" style="color: #D2691E;">🌱 <em>Moins de gaspillage, plus de partage</em> 🌱</h3>
 
 ---
 
