@@ -1,0 +1,28 @@
+export const mockOffers = [
+  {
+    id: 'o1',
+    title: 'Sandwich Poulet + Jus',
+    description: 'Un délicieux sandwich au poulet grillé avec un jus d\'orange frais.',
+    initialPrice: 7.500,
+    discountedPrice: 4.000,
+    category: 'Sandwichs',
+    imageUrl: 'https://via.placeholder.com/300x200/FFA500/FFFFFF?text=Sandwich',
+    isAvailable: true,
+    quantity: 10,
+    pickupTime: '12:00 - 14:00',
+    merchantId: 'm1',
+  },
+  {
+    id: 'o2',
+    title: 'Assortiment de 3 Pâtisseries',
+    description: 'Trois pâtisseries au choix parmi la sélection du jour.',
+    initialPrice: 9.000,
+    discountedPrice: 5.500,
+    category: 'Pâtisseries',
+    imageUrl: 'https://via.placeholder.com/300x200/FF69B4/FFFFFF?text=Patisseries',
+    isAvailable: false,
+    quantity: 0,
+    pickupTime: '16:00 - 18:00',
+    merchantId: 'm2',
+  },
+];

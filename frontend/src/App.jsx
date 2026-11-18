@@ -10,9 +10,10 @@ import Profile from './pages/common/Profile';
 import MainLayout from './layouts/MainLayout';
 import Card from './components/Card';
 import Button from './components/Button';
+import DemoPage from './pages/DemoPage';
 
 // --- PAGES FACTICES POUR TESTER LES RÔLES ---
-const StudentDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Étudiant 🎓</h1><p className="mt-2 text-stone-500">Bienvenue sur votre tableau de bord.</p><Button className="mt-4" onClick={() => window.location.href='/profile'}>Mon Profil</Button></MainLayout>;
+const StudentDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Étudiant 🎓</h1><p className="mt-2 text-stone-500">Bienvenue sur votre tableau de board.</p><Button className="mt-4" onClick={() => window.location.href='/profile'}>Mon Profil</Button></MainLayout>;
 const MerchantDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Commerçant 🏪</h1><p className="mt-2 text-stone-500">Gérez vos offres ici.</p></MainLayout>;
 const AdminDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Administrateur 🛡️</h1><p className="mt-2 text-stone-500">Supervision de la plateforme.</p></MainLayout>;
 const Unauthorized = () => <div className="p-10 text-center"><h1 className="text-2xl font-bold text-red-600">Accès Refusé 🚫</h1><p>Vous n'avez pas les permissions pour voir cette page.</p><Button onClick={() => window.location.href='/'} className="mt-4">Retour à l'accueil</Button></div>;
