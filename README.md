@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="documentation/maquettes/logo.jpg" alt="Logo CampusSave" width="230"/>
-</p>
+<img width="1536" height="1024" alt="WhatsApp Image 2026-11-17 at 14 43 49" src="https://github.com/user-attachments/assets/c83d5b27-d91f-41aa-a59a-943532e52506" />
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/ESSECT-Business%20Computing-556B2F?style=for-the-badge&logoColor=white" alt="ESSECT"/>
