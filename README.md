@@ -4,7 +4,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/ESSECT-Business%20Computing-556B2F?style=for-the-badge&logoColor=white" alt="ESSECT"/>
   <img src="https://img.shields.io/badge/Statut-En%20Développement-D2691E?style=for-the-badge&logoColor=white" alt="Statut"/>
-  <img src="https://img.shields.io/badge/Date%20limite-25%20Nov%202026-8B4513?style=for-the-badge&logoColor=white" alt="Deadline"/>
+ 
 </p>
 
 <h3 align="center" style="color: #D2691E;">🌱 <em>Moins de gaspillage, plus de partage</em> 🌱</h3>
