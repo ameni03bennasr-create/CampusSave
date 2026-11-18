@@ -26,6 +26,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/demo" element={<DemoPage />} />
+
 
       {/* Routes protégées (Tout utilisateur connecté) */}
       <Route element={<ProtectedRoute />}>
