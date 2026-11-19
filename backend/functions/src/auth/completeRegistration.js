@@ -1,35 +1,33 @@
+// SEULE méthode d'inscription du backend (l'ancienne "inscrire" a été supprimée).
+// Le frontend crée d'abord le compte Firebase Auth (email + mot de passe),
+// puis appelle cette fonction avec les informations du profil.
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { FieldValue } = require("firebase-admin/firestore");
 const { auth, db } = require("../config/firebase");
-const { ROLES, roleAtSignup } = require("./roles");
+const { ROLES, roleAtSignup } = require("../constants/roles");
+const { STATUT_VALIDATION } = require("../constants/statuts");
 const { validateRegistrationData } = require("../validators/registration");
+const { handle } = require("../utils/handler");
 
-exports.completeRegistration = onCall(async (request) => {
-  // 1. Il faut être connecté (compte Authentication déjà créé par le frontend).
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "Vous devez être connecté.");
-  }
+exports.completeRegistration = onCall(handle("completeRegistration", async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Vous devez être connecté.");
   const uid = request.auth.uid;
   const email = request.auth.token.email;
-  if (!email) {
-    throw new HttpsError("failed-precondition", "Le compte n'a pas d'adresse e-mail.");
-  }
+  if (!email) throw new HttpsError("failed-precondition", "Le compte n'a pas d'adresse e-mail.");
 
   const userRef = db.collection("users").doc(uid);
 
-  // 2. Déjà inscrit ? On ne recrée rien, on réapplique seulement le claim
-  //    (utile si un premier appel a échoué entre l'écriture et le claim).
+  // Déjà inscrit : on ne recrée rien, on réapplique seulement le claim
+  // (utile si un premier appel a échoué entre l'écriture et le claim).
   const existing = await userRef.get();
   if (existing.exists) {
     await auth.setCustomUserClaims(uid, { role: existing.data().role });
     return { alreadyRegistered: true, role: existing.data().role };
   }
 
-  // 3. Validation des données reçues.
   const input = validateRegistrationData(request.data);
   const role = roleAtSignup(input.role);
-
-  // 4. Écriture des profils en une seule opération atomique.
+  const estCommercant = input.role === ROLES.COMMERCANT;
 
   const batch = db.batch();
   batch.create(userRef, {
@@ -40,20 +38,21 @@ exports.completeRegistration = onCall(async (request) => {
     role,
     dateCreation: FieldValue.serverTimestamp(),
     // Étudiant et association (qui achète comme un étudiant) :
-    ...(role === ROLES.STUDENT || role === ROLES.ASSOCIATION
-      ? { soldeEcoPoints: 0 }
+    ...(role === ROLES.ETUDIANT || role === ROLES.ASSOCIATION
+      ? { soldeEcoPoints: 0, niveauFidelite: "Bronze" }
       : {}),
+    ...(estCommercant ? { statutValidation: STATUT_VALIDATION.EN_ATTENTE } : {}),
   });
 
-  if (input.role === ROLES.MERCHANT) {
-    batch.create(db.collection("merchants").doc(uid), {
+  if (estCommercant) {
+    batch.create(db.collection("commercants").doc(uid), {
       idCommerce: uid,
       nomCommerce: input.nomCommerce,
       logo: null,
       description: input.description,
       specialite: input.specialite,
       adresse: input.adresse,
-      statutValidation: "en_attente",
+      statutValidation: STATUT_VALIDATION.EN_ATTENTE,
       dateDemande: FieldValue.serverTimestamp(),
     });
   }
@@ -63,14 +62,10 @@ exports.completeRegistration = onCall(async (request) => {
       idAssociation: uid,
       nomClub: input.nomClub,
       universite: input.universite,
-
     });
   }
 
   await batch.commit();
-
-  // 5. Le rôle est posé côté serveur uniquement.
-  await auth.setCustomUserClaims(uid, { role });
-
+  await auth.setCustomUserClaims(uid, { role }); // rôle posé côté serveur uniquement
   return { alreadyRegistered: false, role };
-});
+}));

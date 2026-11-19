@@ -6,7 +6,11 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test:unit": "node scripts/testUnit.js",
+    "test:phase2": "node scripts/testPhase2.js",
+    "test:backend": "node scripts/testBackend.js",
+    "create-admin": "node scripts/createAdmin.js"
   },
   "engines": {
     "node": "24"

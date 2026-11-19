@@ -43,25 +43,25 @@ async function newUser(label) {
 
 (async () => {
   // 1. Appel sans connexion
-  let r = await register(null, { role: "student", nom: "Anonyme" });
+  let r = await register(null, { role: "etudiant", nom: "Anonyme" });
   check("Appel sans connexion refusé", r.body.error?.status === "UNAUTHENTICATED", JSON.stringify(r.body));
 
   // 2. Étudiant
   let u = await newUser("etudiant");
-  r = await register(u.token, { role: "student", nom: "Sami Ben Ali", telephone: "20123456" });
-  check("Inscription étudiant", r.body.result?.role === "student", JSON.stringify(r.body));
+  r = await register(u.token, { role: "etudiant", nom: "Sami Ben Ali", telephone: "20123456" });
+  check("Inscription étudiant", r.body.result?.role === "etudiant", JSON.stringify(r.body));
   let fresh = (await signIn(u.email)).body.idToken;
-  check("Claim role = student", claimsOf(fresh).role === "student");
+  check("Claim role = etudiant", claimsOf(fresh).role === "etudiant");
 
   // 3. Commerçant (en attente)
   u = await newUser("commercant");
   r = await register(u.token, {
-    role: "merchant", nom: "Leila Trabelsi", nomCommerce: "Boulangerie Lac",
+    role: "commercant", nom: "Leila Trabelsi", nomCommerce: "Boulangerie Lac",
     adresse: "12 rue du Lac, Tunis", specialite: "Boulangerie",
   });
-  check("Inscription commerçant", r.body.result?.role === "pending_merchant", JSON.stringify(r.body));
+  check("Inscription commerçant", r.body.result?.role === "commercant_en_attente", JSON.stringify(r.body));
   fresh = (await signIn(u.email)).body.idToken;
-  check("Claim role = pending_merchant", claimsOf(fresh).role === "pending_merchant");
+  check("Claim role = commercant_en_attente", claimsOf(fresh).role === "commercant_en_attente");
 
   // 4. Association
   u = await newUser("association");
@@ -79,10 +79,10 @@ async function newUser(label) {
 
   // 6. Double inscription
   u = await newUser("double");
-  await register(u.token, { role: "student", nom: "Double Test" });
-  r = await register(u.token, { role: "merchant", nom: "Double Test" });
+  await register(u.token, { role: "etudiant", nom: "Double Test" });
+  r = await register(u.token, { role: "commercant", nom: "Double Test" });
   check("Double inscription sans changement de rôle",
-    r.body.result?.alreadyRegistered === true && r.body.result?.role === "student",
+    r.body.result?.alreadyRegistered === true && r.body.result?.role === "etudiant",
     JSON.stringify(r.body));
 
   console.log(failures === 0 ? "\nTous les tests passent." : `\n${failures} test(s) en échec.`);
