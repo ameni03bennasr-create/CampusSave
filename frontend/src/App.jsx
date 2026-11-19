@@ -10,7 +10,6 @@ import Profile from './pages/common/Profile';
 import MainLayout from './layouts/MainLayout';
 import Card from './components/Card';
 import Button from './components/Button';
-import DemoPage from './pages/DemoPage';
 
 // --- PAGES FACTICES POUR TESTER LES RÔLES ---
 const StudentDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Étudiant 🎓</h1><p className="mt-2 text-stone-500">Bienvenue sur votre tableau de board.</p><Button className="mt-4" onClick={() => window.location.href='/profile'}>Mon Profil</Button></MainLayout>;

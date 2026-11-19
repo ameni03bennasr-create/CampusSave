@@ -44,7 +44,24 @@ const Sidebar = ({ isOpen, onClose }) => {
               </div>
            </div>
         </div>
-
+{/* ... code précédent ... */}
+        <div className="p-4 border-t border-cream">
+          {/* AJOUT DE LA CONDITION ICI */}
+          {user?.role !== 'admin' && (
+            <div className="mb-4 p-3 rounded-xl bg-olive/10 flex items-center justify-between">
+              <span className="text-xs font-bold text-olive flex items-center gap-1.5"><Leaf className="w-4 h-4"/> EcoPoints</span>
+              <span className="text-sm font-extrabold text-olive">340</span>
+            </div>
+          )}
+          
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Déconnexion
+          </button>
+        </div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => (
             <button key={item.name} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
