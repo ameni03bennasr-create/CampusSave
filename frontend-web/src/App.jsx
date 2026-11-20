@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MerchantOrdersPage from './pages/merchant/MerchantOrdersPage';
+import AssociationDashboard from './pages/association/AssociationDashboard'; // <-- Nouvel import
+
 
 // Pages publiques
 import Login from './pages/auth/Login';
@@ -78,15 +80,26 @@ const AppRoutes = () => {
         <Route path="/orders" element={<OrdersPage />} /> {/* L'historique s'adapte au rôle */}
       </Route>
 
-      {/* ROUTES ÉTUDIANT UNIQUEMENT */}
-      <Route element={<ProtectedRoute allowedRoles={['etudiant']} />}>
-        <Route path="/etudiant" element={<StudentDashboard />} />
+      {/* ROUTE NON AUTORISÉE */}
+       {/* ROUTES ÉTUDIANT *ET* ASSOCIATION (Achat) */}
+      <Route element={<ProtectedRoute allowedRoles={['etudiant', 'association']} />}>
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/offer/:id" element={<OfferDetails />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
       </Route>
 
+      {/* ROUTE ÉTUDIANT UNIQUEMENT (Dashboard spécifique) */}
+      <Route element={<ProtectedRoute allowedRoles={['etudiant']} />}>
+        <Route path="/etudiant" element={<StudentDashboard />} />
+      </Route>
+
+      {/* ROUTE ASSOCIATION UNIQUEMENT */}
+      <Route element={<ProtectedRoute allowedRoles={['association']} />}>
+        <Route path="/association" element={<AssociationDashboard />} />
+      </Route>
+ 
       {/* ROUTES COMMERÇANT UNIQUEMENT */}
        <Route element={<ProtectedRoute allowedRoles={['commercant']} />}>
         <Route path="/commercant" element={<MerchantDashboard />} />

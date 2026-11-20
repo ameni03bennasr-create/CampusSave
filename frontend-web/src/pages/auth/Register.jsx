@@ -2,19 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
-import { Mail, Lock, User, Store, GraduationCap } from 'lucide-react';
+import { Mail, Lock, User, Store, GraduationCap, Users } from 'lucide-react'; // Ajout de Users
 import logo from '../../assets/logo.png';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); // On utilisera le login simulé après inscription
+  const { login } = useAuth();
   
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'etudiant' // Par défaut
+    role: 'etudiant' 
   });
   
   const [errors, setErrors] = useState({});
@@ -49,10 +49,8 @@ const Register = () => {
     }
 
     setIsLoading(true);
-    // Simulation de l'appel API d'inscription (Firebase plus tard)
     setTimeout(() => {
       setIsLoading(false);
-      // On simule une inscription réussie et on redirige vers la vérification email
       navigate('/verify-email', { state: { email: formData.email } });
     }, 1500);
   };
@@ -70,52 +68,62 @@ const Register = () => {
           
           <form className="space-y-6" onSubmit={handleSubmit}>
             
-            {/* Choix du rôle */}
+            {/* Choix du rôle (3 boutons) */}
             <div>
               <label className="block text-sm font-bold text-stone-700 mb-2">Je suis un :</label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('etudiant')}
-                  className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${
+                  className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all ${
                     formData.role === 'etudiant' 
                       ? 'border-[#4C6749] bg-[#4C6749]/10 text-[#4C6749]' 
                       : 'border-stone-200 text-stone-500 hover:border-stone-300'
                   }`}
                 >
-                  <GraduationCap className="w-6 h-6 mb-2" />
-                  <span className="font-bold">Étudiant</span>
+                  <GraduationCap className="w-5 h-5 mb-1" />
+                  <span className="font-bold text-xs">Étudiant</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('commercant')}
-                  className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${
+                  className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all ${
                     formData.role === 'commercant' 
                       ? 'border-[#D98245] bg-[#D98245]/10 text-[#D98245]' 
                       : 'border-stone-200 text-stone-500 hover:border-stone-300'
                   }`}
                 >
-                  <Store className="w-6 h-6 mb-2" />
-                  <span className="font-bold">Commerçant</span>
+                  <Store className="w-5 h-5 mb-1" />
+                  <span className="font-bold text-xs">Commerçant</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('association')}
+                  className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all ${
+                    formData.role === 'association' 
+                      ? 'border-[#A84F32] bg-[#A84F32]/10 text-[#A84F32]' 
+                      : 'border-stone-200 text-stone-500 hover:border-stone-300'
+                  }`}
+                >
+                  <Users className="w-5 h-5 mb-1" />
+                  <span className="font-bold text-xs">Association</span>
                 </button>
               </div>
             </div>
 
-            {/* Nom */}
             <div>
-              <label className="block text-sm font-bold text-stone-700">Nom complet / Nom du commerce</label>
+              <label className="block text-sm font-bold text-stone-700">Nom complet / Nom du club</label>
               <div className="mt-1 relative">
                 <User className="absolute left-3 top-3 w-5 h-5 text-stone-400" />
                 <input
                   type="text" name="name" value={formData.name} onChange={handleChange}
                   className={`pl-10 w-full px-3 py-2.5 border rounded-xl outline-none focus:border-[#A84F32] ${errors.name ? 'border-red-500' : 'border-stone-300'}`}
-                  placeholder="Ex: Yasmine / Cafétéria ESSECT"
+                  placeholder="Ex: Club Informatique ESSECT"
                 />
               </div>
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-bold text-stone-700">Adresse Email</label>
               <div className="mt-1 relative">
@@ -123,13 +131,12 @@ const Register = () => {
                 <input
                   type="email" name="email" value={formData.email} onChange={handleChange}
                   className={`pl-10 w-full px-3 py-2.5 border rounded-xl outline-none focus:border-[#A84F32] ${errors.email ? 'border-red-500' : 'border-stone-300'}`}
-                  placeholder="vous@exemple.com"
+                  placeholder="contact@club.com"
                 />
               </div>
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
-            {/* Mot de passe */}
             <div>
               <label className="block text-sm font-bold text-stone-700">Mot de passe</label>
               <div className="mt-1 relative">
@@ -143,7 +150,6 @@ const Register = () => {
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
-            {/* Confirmation mot de passe */}
             <div>
               <label className="block text-sm font-bold text-stone-700">Confirmer le mot de passe</label>
               <div className="mt-1 relative">

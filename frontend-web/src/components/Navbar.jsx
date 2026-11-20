@@ -31,6 +31,16 @@ const Navbar = () => {
         profileLink
       ];
     }
+        if (user?.role === 'association') {
+      return [
+        { name: 'Accueil Club', path: '/association', icon: Users }, // L'icône Users est déjà importée normalement
+        { name: 'Explorer', path: '/explore', icon: Search },
+        { name: 'Panier Groupé', path: '/cart', icon: ShoppingCart, badge: cartCount },
+        { name: 'Commandes', path: '/orders', icon: ShoppingBag },
+        { name: 'Profil', path: '/profile', icon: User }
+      ];
+    }
+    
 
     if (user?.role === 'commercant') {
       return [
@@ -40,7 +50,7 @@ const Navbar = () => {
         { name: 'Profil', path: '/profile', icon: User }
       ];
     }
-    
+
     if (user?.role === 'admin') {
       return [
         { name: 'Supervision', path: '/admin', icon: Shield },
