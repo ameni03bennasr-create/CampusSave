@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
 
 const MainLayout = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   return (
-    <div className="min-h-screen flex bg-cream">
-      {/* Sidebar visible en permanence sur Desktop */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    <div className="min-h-screen bg-[#F8F1E7] flex flex-col font-sans">
+      {/* La nouvelle barre de navigation horizontale */}
+      <Navbar />
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
-        
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          {children}
-        </main>
-        
-        <Footer />
-      </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {children}
+      </main>
+      
+      {/* Footer simple */}
+      <footer className="bg-white border-t border-[#E9C98B] py-6 text-center text-sm text-stone-500">
+        <p>CampusSave © 2026 • Projet Intégrateur ESSECT Tunis</p>
+        <p className="text-xs mt-1">Moins de gaspillage, plus de partage.</p>
+      </footer>
     </div>
   );
 };

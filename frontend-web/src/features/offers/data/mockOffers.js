@@ -6,7 +6,8 @@ export const mockOffers = [
     initialPrice: 7.500,
     discountedPrice: 4.000,
     category: 'Sandwichs',
-    imageUrl: 'https://via.placeholder.com/300x200/FFA500/FFFFFF?text=Sandwich',
+    // Vraie image de sandwich
+    imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600&auto=format&fit=crop',
     isAvailable: true,
     quantity: 10,
     pickupTime: '12:00 - 14:00',
@@ -19,7 +20,8 @@ export const mockOffers = [
     initialPrice: 9.000,
     discountedPrice: 5.500,
     category: 'Pâtisseries',
-    imageUrl: 'https://via.placeholder.com/300x200/FF69B4/FFFFFF?text=Patisseries',
+    // Vraie image de pâtisseries
+    imageUrl: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=600&auto=format&fit=crop',
     isAvailable: false,
     quantity: 0,
     pickupTime: '16:00 - 18:00',
