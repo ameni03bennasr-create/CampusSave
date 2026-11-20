@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { Home, Search, ShoppingBag, ShoppingCart, User, LogOut, Menu, X, Leaf } from 'lucide-react';
-import logo from '../assets/logo.png'; // Import du logo
+import { Home, Search, ShoppingBag, ShoppingCart, User, LogOut, Menu, X, Leaf, Store, Shield } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
   const { logout, user } = useAuth();
@@ -18,13 +18,40 @@ const Navbar = () => {
 
   const cartCount = getCartCount();
 
-  const navItems = [
-    { name: 'Accueil', path: `/${user?.role || 'login'}`, icon: Home },
-    { name: 'Explorer', path: '/explore', icon: Search },
-    { name: 'Panier', path: '/cart', icon: ShoppingCart, badge: cartCount },
-    { name: 'Commandes', path: '/orders', icon: ShoppingBag },
-    { name: 'Profil', path: '/profile', icon: User },
-  ];
+  // --- DÉFINITION DES LIENS PAR RÔLE ---
+  const getNavItems = () => {
+    const profileLink = { name: 'Profil', path: '/profile', icon: User };
+    
+    if (user?.role === 'etudiant') {
+      return [
+        { name: 'Accueil', path: '/etudiant', icon: Home },
+        { name: 'Explorer', path: '/explore', icon: Search },
+        { name: 'Panier', path: '/cart', icon: ShoppingCart, badge: cartCount },
+        { name: 'Commandes', path: '/orders', icon: ShoppingBag },
+        profileLink
+      ];
+    }
+
+    if (user?.role === 'commercant') {
+      return [
+        { name: 'Mon Espace', path: '/commercant', icon: Store },
+        // J'ajoute "Commandes" car un commerçant doit voir les commandes qu'on lui a passées pour valider les QR codes
+        { name: 'Commandes Reçues', path: '/orders', icon: ShoppingBag }, 
+        profileLink
+      ];
+    }
+
+    if (user?.role === 'admin') {
+      return [
+        { name: 'Supervision', path: '/admin', icon: Shield },
+        profileLink
+      ];
+    }
+
+    return []; // Par défaut
+  };
+
+  const navItems = getNavItems();
 
   return (
     <nav className="bg-white border-b border-[#E9C98B] sticky top-0 z-50 shadow-sm">

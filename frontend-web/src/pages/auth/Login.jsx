@@ -71,6 +71,15 @@ const Login = () => {
 
           <Button type="submit" className="w-full py-3.5 mt-2">Se connecter</Button>
         </form>
+        {/* Juste en dessous du formulaire de connexion, ajoutez ceci */}
+<div className="mt-6 text-center">
+  <p className="text-sm text-stone-600">
+    Pas encore de compte ?{' '}
+    <Link to="/register" className="font-bold text-[#A84F32] hover:underline">
+      S'inscrire
+    </Link>
+  </p>
+</div>
       </div>
     </div>
   );
