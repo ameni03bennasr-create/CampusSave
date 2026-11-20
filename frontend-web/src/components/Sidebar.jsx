@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Home, Search, ShoppingBag, User, LogOut, Leaf } from 'lucide-react';
+import { useCart } from '../context/CartContext'; // Import du panier
+import { Home, Search, ShoppingBag, ShoppingCart, User, LogOut, Leaf } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { logout, user } = useAuth();
+  const { getCartCount } = useCart(); // Récupération du nombre d'articles
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,9 +14,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     navigate('/login');
   };
 
+  const cartCount = getCartCount();
+
   const navItems = [
     { name: 'Accueil', path: `/${user?.role || 'login'}`, icon: Home },
     { name: 'Explorer', path: '/explore', icon: Search },
+    // Ajout du Panier ici
+    { name: 'Mon Panier', path: '/cart', icon: ShoppingCart, badge: cartCount },
     { name: 'Commandes', path: '/orders', icon: ShoppingBag },
     { name: 'Mon Profil', path: '/profile', icon: User },
   ];
@@ -50,19 +56,26 @@ const Sidebar = ({ isOpen, onClose }) => {
             <NavLink 
               key={item.name} 
               to={item.path}
-              className={({ isActive }) => `w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+              className={({ isActive }) => `w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                 isActive ? 'bg-terracotta text-white' : 'text-stone-600 hover:bg-cream'
               }`}
             >
-              <item.icon className="w-5 h-5" />
-              {item.name}
+              <div className="flex items-center gap-3">
+                <item.icon className="w-5 h-5" />
+                {item.name}
+              </div>
+              {/* Affichage de la bulle rouge si c'est le panier et qu'il y a des articles */}
+              {item.badge > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
 
         {/* Pied de la Sidebar : EcoPoints + Déconnexion */}
         <div className="p-4 border-t border-cream">
-          {/* CONDITION : Seulement pour les étudiants */}
           {user?.role === 'etudiant' && (
             <div className="mb-4 p-3 rounded-xl bg-olive/10 flex items-center justify-between">
               <span className="text-xs font-bold text-olive flex items-center gap-1.5">

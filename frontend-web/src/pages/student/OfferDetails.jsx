@@ -3,14 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../../layouts/MainLayout';
 import Button from '../../components/Button';
 import { mockOffers } from '../../features/offers/data/mockOffers';
+import { useCart } from '../../context/CartContext'; // Import du contexte
 import { ArrowLeft, Clock, Tag, ShieldCheck } from 'lucide-react';
 
 const OfferDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart(); // Récupération de la fonction d'ajout
   
-  // Récupération de l'offre (simulation avec les données mock)
   const offer = mockOffers.find(o => o.id === id);
 
   if (!offer) {
@@ -25,8 +26,9 @@ const OfferDetails = () => {
   }
 
   const handleAddToCart = () => {
-    // Logique du panier à venir dans la prochaine étape
-    alert(`${quantity} x ${offer.title} ajouté au panier !`);
+    addToCart(offer, quantity);
+    // On redirige vers le panier après l'ajout
+    navigate('/cart');
   };
 
   return (
@@ -39,7 +41,6 @@ const OfferDetails = () => {
       </button>
 
       <div className="bg-white rounded-3xl border border-[#E9C98B] shadow-sm overflow-hidden flex flex-col md:flex-row">
-        {/* Image */}
         <div className="md:w-1/2 h-64 md:h-auto relative">
           <img src={offer.imageUrl} alt={offer.title} className="w-full h-full object-cover" />
           <div className="absolute top-4 left-4">
@@ -49,7 +50,6 @@ const OfferDetails = () => {
           </div>
         </div>
 
-        {/* Détails */}
         <div className="md:w-1/2 p-8 flex flex-col">
           <div className="flex items-center gap-2 mb-2">
             <Tag className="w-4 h-4 text-[#D98245]" />

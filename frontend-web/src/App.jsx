@@ -1,7 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext'; // Import du Panier
 import ProtectedRoute from './components/ProtectedRoute';
+import OrdersPage from './pages/student/OrdersPage'; // <-- Nouvel import
+
 
 // Import des pages
 import Login from './pages/auth/Login';
@@ -11,17 +14,18 @@ import ComponentsDemo from './pages/common/ComponentsDemo';
 import MainLayout from './layouts/MainLayout';
 import Button from './components/Button';
 
-// Import des nouvelles pages Étudiant
+// Pages Étudiant
 import ExplorePage from './pages/student/ExplorePage';
 import OfferDetails from './pages/student/OfferDetails';
+import CartPage from './pages/student/CartPage';
+import CheckoutPage from './pages/student/CheckoutPage';
 
-// Import composants pour le Dashboard Commerçant
+// Composants Dashboard
 import MerchantCard from './features/merchants/components/MerchantCard';
 import OfferCard from './features/offers/components/OfferCard';
 import { mockOffers } from './features/offers/data/mockOffers';
 import { mockMerchants } from './features/merchants/data/mockMerchants';
 
-// --- PAGES FACTICES ---
 const MerchantDashboard = () => {
   const currentMerchant = mockMerchants[0];
   return (
@@ -41,10 +45,8 @@ const MerchantDashboard = () => {
 
 const StudentDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Étudiant 🎓</h1><p className="mt-2 text-stone-500">Bienvenue sur votre tableau de bord.</p><Button className="mt-4" onClick={() => window.location.href='/profile'}>Mon Profil</Button></MainLayout>;
 const AdminDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Administrateur 🛡️</h1></MainLayout>;
-const OrdersPage = () => <MainLayout><h1 className="text-2xl font-bold">Mes Commandes 📦</h1><p className="mt-2 text-stone-500">Historique de vos commandes (à venir).</p></MainLayout>;
 const Unauthorized = () => <div className="p-10 text-center"><h1 className="text-2xl font-bold text-red-600">Accès Refusé 🚫</h1><Button onClick={() => window.location.href='/'} className="mt-4">Retour</Button></div>;
 
-// --- ROUTEUR PRINCIPAL ---
 const AppRoutes = () => {
   return (
     <Routes>
@@ -57,6 +59,8 @@ const AppRoutes = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/offer/:id" element={<OfferDetails />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/orders" element={<OrdersPage />} />
       </Route>
 
@@ -82,7 +86,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <CartProvider> {/* Ajout du CartProvider ici */}
+          <AppRoutes />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );
