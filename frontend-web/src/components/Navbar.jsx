@@ -35,12 +35,12 @@ const Navbar = () => {
     if (user?.role === 'commercant') {
       return [
         { name: 'Mon Espace', path: '/commercant', icon: Store },
-        // J'ajoute "Commandes" car un commerçant doit voir les commandes qu'on lui a passées pour valider les QR codes
-        { name: 'Commandes Reçues', path: '/orders', icon: ShoppingBag }, 
-        profileLink
+        // On change le chemin vers la nouvelle page dédiée aux commerçants
+        { name: 'Commandes Reçues', path: '/merchant/orders', icon: ShoppingBag }, 
+        { name: 'Profil', path: '/profile', icon: User }
       ];
     }
-
+    
     if (user?.role === 'admin') {
       return [
         { name: 'Supervision', path: '/admin', icon: Shield },

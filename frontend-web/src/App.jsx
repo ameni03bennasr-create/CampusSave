@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import MerchantOrdersPage from './pages/merchant/MerchantOrdersPage';
 
 // Pages publiques
 import Login from './pages/auth/Login';
@@ -10,6 +11,7 @@ import Register from './pages/auth/Register';
 import VerifyEmail from './pages/auth/VerifyEmail';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Unauthorized from './pages/auth/Unauthorized'; // (Si vous l'avez dans un fichier séparé)
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Pages communes
 import Profile from './pages/common/Profile';
@@ -57,12 +59,9 @@ const MerchantDashboard = () => {
 };
 
 // Dashboard Admin
-const AdminDashboard = () => (
-  <MainLayout>
-    <h1 className="text-2xl font-bold text-stone-800">Espace Administrateur 🛡️</h1>
-    <p className="mt-2 text-stone-500">Bienvenue dans votre espace de supervision.</p>
-  </MainLayout>
-);
+<Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+  <Route path="/admin" element={<AdminDashboard />} />
+</Route>
 
 const AppRoutes = () => {
   return (
@@ -89,10 +88,12 @@ const AppRoutes = () => {
       </Route>
 
       {/* ROUTES COMMERÇANT UNIQUEMENT */}
-      <Route element={<ProtectedRoute allowedRoles={['commercant']} />}>
+       <Route element={<ProtectedRoute allowedRoles={['commercant']} />}>
         <Route path="/commercant" element={<MerchantDashboard />} />
         <Route path="/merchant/offer/new" element={<OfferFormPage />} />
         <Route path="/merchant/offer/edit/:id" element={<OfferFormPage />} />
+        {/* Ajoutez cette ligne */}
+        <Route path="/merchant/orders" element={<MerchantOrdersPage />} />
       </Route>
 
       {/* ROUTES ADMIN UNIQUEMENT */}
