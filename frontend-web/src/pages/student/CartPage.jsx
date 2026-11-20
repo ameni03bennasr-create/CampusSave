@@ -9,16 +9,20 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
 
-  if (cartItems.length === 0) {
+    if (cartItems.length === 0) {
     return (
       <MainLayout>
-        <div className="text-center py-20 bg-white rounded-3xl border border-[#E9C98B]">
-          <ShoppingBag className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+        <div className="py-20 bg-white rounded-3xl border border-[#E9C98B] flex flex-col items-center justify-center text-center">
+          <ShoppingBag className="w-16 h-16 text-stone-300 mb-4" />
           <h2 className="text-2xl font-bold text-stone-800 mb-2">Votre panier est vide</h2>
           <p className="text-stone-500 mb-6">Découvrez nos offres et faites de bonnes affaires !</p>
-          <Button onClick={() => navigate('/explore')} className="bg-[#D98245] hover:bg-[#c0723a] text-white">
-            Voir les offres
-          </Button>
+          
+          {/* On enveloppe le bouton dans une div flex pour le centrer */}
+          <div className="flex justify-center w-full">
+            <Button onClick={() => navigate('/explore')} className="bg-[#D98245] hover:bg-[#c0723a] text-white">
+              Voir les offres
+            </Button>
+          </div>
         </div>
       </MainLayout>
     );
