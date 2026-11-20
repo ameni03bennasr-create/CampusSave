@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -11,70 +11,38 @@ import ComponentsDemo from './pages/common/ComponentsDemo';
 import MainLayout from './layouts/MainLayout';
 import Button from './components/Button';
 
-// Import de vos composants G3 et données mock
-import OfferCard from './features/offers/components/OfferCard';
+// Import des nouvelles pages Étudiant
+import ExplorePage from './pages/student/ExplorePage';
+import OfferDetails from './pages/student/OfferDetails';
+
+// Import composants pour le Dashboard Commerçant
 import MerchantCard from './features/merchants/components/MerchantCard';
+import OfferCard from './features/offers/components/OfferCard';
 import { mockOffers } from './features/offers/data/mockOffers';
 import { mockMerchants } from './features/merchants/data/mockMerchants';
 
-// --- PAGES AVEC INTÉGRATION DES COMPOSANTS G3 ---
-
-// 1. Page Explorer (Étudiant)
-const ExplorePage = () => {
-  // On simule que l'étudiant voit les offres
-  return (
-    <MainLayout>
-      <h1 className="text-2xl font-bold mb-6">Explorer les offres 🔍</h1>
-      {mockOffers.length === 0 ? (
-        <p className="text-stone-500">Aucune offre disponible pour le moment.</p>
-      ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-          {mockOffers.map((offer) => (
-            <OfferCard 
-              key={offer.id} 
-              offer={offer} 
-              userRole="student" 
-              onView={(id) => alert(`Voir l'offre ${id}`)} 
-            />
-          ))}
-        </div>
-      )}
-    </MainLayout>
-  );
-};
-
-// 2. Dashboard Commerçant
+// --- PAGES FACTICES ---
 const MerchantDashboard = () => {
-  const currentMerchant = mockMerchants[0]; // On simule que Karim est le premier commerçant
+  const currentMerchant = mockMerchants[0];
   return (
     <MainLayout>
       <h1 className="text-2xl font-bold mb-6">Espace Commerçant 🏪</h1>
-      
-      {/* Affichage de la carte commerçant */}
       <h2 className="text-xl font-semibold mb-4">Ma Fiche Établissement</h2>
       <MerchantCard merchant={currentMerchant} />
-
-      {/* Affichage des offres du commerçant */}
       <h2 className="text-xl font-semibold mt-10 mb-4">Mes Offres Publiées</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {mockOffers.map((offer) => (
-          <OfferCard 
-            key={offer.id} 
-            offer={offer} 
-            userRole="merchant" 
-            onEdit={(id) => alert(`Modifier l'offre ${id}`)}
-            onDelete={(id) => alert(`Supprimer l'offre ${id}`)}
-          />
+          <OfferCard key={offer.id} offer={offer} userRole="merchant" onEdit={(id) => alert(`Modifier ${id}`)} onDelete={(id) => alert(`Supprimer ${id}`)} />
         ))}
       </div>
     </MainLayout>
   );
 };
 
-const AdminDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Administrateur 🛡️</h1><p className="mt-2 text-stone-500">Supervision de la plateforme.</p></MainLayout>;
 const StudentDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Étudiant 🎓</h1><p className="mt-2 text-stone-500">Bienvenue sur votre tableau de bord.</p><Button className="mt-4" onClick={() => window.location.href='/profile'}>Mon Profil</Button></MainLayout>;
-const OrdersPage = () => <MainLayout><h1 className="text-2xl font-bold">Mes Commandes 📦</h1><p className="mt-2 text-stone-500">Cette page affichera l'historique de vos commandes.</p></MainLayout>;
-const Unauthorized = () => <div className="p-10 text-center"><h1 className="text-2xl font-bold text-red-600">Accès Refusé 🚫</h1><Button onClick={() => window.location.href='/'} className="mt-4">Retour à l'accueil</Button></div>;
+const AdminDashboard = () => <MainLayout><h1 className="text-2xl font-bold">Espace Administrateur 🛡️</h1></MainLayout>;
+const OrdersPage = () => <MainLayout><h1 className="text-2xl font-bold">Mes Commandes 📦</h1><p className="mt-2 text-stone-500">Historique de vos commandes (à venir).</p></MainLayout>;
+const Unauthorized = () => <div className="p-10 text-center"><h1 className="text-2xl font-bold text-red-600">Accès Refusé 🚫</h1><Button onClick={() => window.location.href='/'} className="mt-4">Retour</Button></div>;
 
 // --- ROUTEUR PRINCIPAL ---
 const AppRoutes = () => {
@@ -88,6 +56,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute />}>
         <Route path="/profile" element={<Profile />} />
         <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/offer/:id" element={<OfferDetails />} />
         <Route path="/orders" element={<OrdersPage />} />
       </Route>
 
