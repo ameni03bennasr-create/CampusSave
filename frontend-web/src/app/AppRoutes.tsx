@@ -7,10 +7,14 @@ import { STUDENT_BASE_PATH } from '@/config/studentPages'
 import LandingPage from '@/pages/public/LandingPage'
 import NotFoundPage from '@/pages/public/NotFoundPage'
 
+
 // Each space is a separate chunk: a student never downloads the administrator code.
 const StudentSpace = lazy(() => import('@/pages/student/StudentSpace'))
 const MerchantSpace = lazy(() => import('@/pages/merchant/MerchantSpace'))
 const AdminSpace = lazy(() => import('@/pages/admin/AdminSpace'))
+const AssociationSpace = lazy(() => import('@/pages/association/AssociationSpace'));
+
+
 
 /**
  * Application routes (router-agnostic so tests can mount them in a MemoryRouter).
@@ -28,6 +32,8 @@ export default function AppRoutes() {
         <Route path={`${MERCHANT_BASE_PATH}/*`} element={<MerchantSpace />} />
         <Route path={`${ADMIN_BASE_PATH}/*`} element={<AdminSpace />} />
         <Route path="*" element={<NotFoundPage />} />
+        <Route path="/association/*" element={<AssociationSpace />} />
+
       </Routes>
     </Suspense>
   )
