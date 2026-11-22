@@ -9,66 +9,32 @@ import { localId } from '@/utils/ids';
 import type { ToastKind, ToastState } from '@/types/ui';
 
 const EMPTY_STUDENT: StudentProfile = {
-  id: '',
-  fullName: '',
-  email: '',
-  phone: '',
-  filiere: '',
-  etablissement: '',
-  avatar: '',
-  ecoPoints: 0,
-  memberSince: '',
+  id: '', fullName: '', email: '', phone: '', filiere: '', etablissement: '', avatar: '', ecoPoints: 340, memberSince: '',
 };
 
-// --- DONNÉES FICTIVES POUR TESTER ---
-const MOCK_RESTAURANTS = [
-  { id: 'r1', name: 'Cafétéria ESSECT', address: 'Bâtiment principal, ESSECT', distanceMeters: 50 },
-  { id: 'r2', name: 'Pâtisserie Le Délice', address: 'Rue de Montfleury, Tunis', distanceMeters: 200 },
-] as Restaurant[];
+// --- DONNÉES FICTIVES COMPLÈTES ---
+const MOCK_RESTAURANTS: Restaurant[] = [
+  { id: 'r1', name: 'Cafétéria ESSECT', address: 'Bâtiment principal, ESSECT', distanceMeters: 50, type: 'Cafétéria', pickupHours: '12h - 15h', activeOffersCount: 2, rating: 4.5, reviewsCount: 0, phone: '', coords: { x: 60, y: 40 } },
+  { id: 'r2', name: 'Pâtisserie Le Délice', address: 'Rue de Montfleury, Tunis', distanceMeters: 200, type: 'Pâtisserie', pickupHours: '16h - 19h', activeOffersCount: 1, rating: 4.5, reviewsCount: 0, phone: '', coords: { x: 30, y: 60 } },
+];
 
 const MOCK_OFFERS: StudentOffer[] = [
-  {
-    id: 'o1', title: 'Sandwich Poulet + Jus', description: 'Délicieux sandwich au poulet grillé avec un jus d\'orange frais.',
-    initialPrice: 7.500, reducedPrice: 4.000, category: 'Sandwichs',
-    image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600&auto=format&fit=crop',
-    quantity: 10, pickupHours: '12:00 - 14:00', restaurantId: 'r1', weightKg: 0.3,
-    featured: true, isRecent: true, isSurpriseBasket: false
-  },
-  {
-    id: 'o2', title: 'Assortiment de 3 Pâtisseries', description: 'Trois pâtisseries au choix parmi la sélection du jour.',
-    initialPrice: 9.000, reducedPrice: 5.500, category: 'Pâtisseries',
-    image: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=600&auto=format&fit=crop',
-    quantity: 5, pickupHours: '16:00 - 18:00', restaurantId: 'r2', weightKg: 0.4,
-    featured: false, isRecent: true, isSurpriseBasket: false
-  },
-  {
-    id: 'o3', title: 'Panier Surprise', description: 'Un mélange d\'invendus salés et sucrés.',
-    initialPrice: 15.000, reducedPrice: 6.000, category: 'Panier Surprise',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop',
-    quantity: 3, pickupHours: '18:00 - 19:00', restaurantId: 'r1', weightKg: 0.8,
-    featured: false, isRecent: false, isSurpriseBasket: true
-  }
+  { id: 'o1', title: 'Sandwich Poulet + Jus', description: 'Délicieux sandwich au poulet grillé avec un jus d\'orange frais.', initialPrice: 7.500, reducedPrice: 4.000, category: 'Sandwichs', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600&auto=format&fit=crop', quantity: 10, pickupHours: '12:00 - 14:00', restaurantId: 'r1', weightKg: 0.3, featured: true, isRecent: true, isSurpriseBasket: false },
+  { id: 'o2', title: 'Assortiment de 3 Pâtisseries', description: 'Trois pâtisseries au choix parmi la sélection du jour.', initialPrice: 9.000, reducedPrice: 5.500, category: 'Pâtisseries', image: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=600&auto=format&fit=crop', quantity: 5, pickupHours: '16:00 - 18:00', restaurantId: 'r2', weightKg: 0.4, featured: true, isRecent: false, isSurpriseBasket: false },
+  { id: 'o3', title: 'Panier Surprise', description: 'Un mélange d\'invendus salés et sucrés.', initialPrice: 15.000, reducedPrice: 6.000, category: 'Panier Surprise', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop', quantity: 3, pickupHours: '18:00 - 19:00', restaurantId: 'r1', weightKg: 0.8, featured: false, isRecent: true, isSurpriseBasket: true }
 ];
 // ------------------------------------
 
 export function useStudentWorkspace() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { page: currentPage, isKnownPage } = resolveSpacePage(
-    pathname,
-    STUDENT_BASE_PATH,
-    STUDENT_PAGE_IDS,
-    STUDENT_DEFAULT_PAGE
-  );
+  const { page: currentPage, isKnownPage } = resolveSpacePage(pathname, STUDENT_BASE_PATH, STUDENT_PAGE_IDS, STUDENT_DEFAULT_PAGE);
   const isAuthPage = STUDENT_AUTH_PAGES.includes(currentPage);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [student, setStudent] = useState<StudentProfile>(EMPTY_STUDENT);
-
-  // On remplace les tableaux vides par nos mock data
   const [restaurants] = useState<Restaurant[]>(MOCK_RESTAURANTS);
   const [offers] = useState<StudentOffer[]>(MOCK_OFFERS);
-
   const [orders, setOrders] = useState<StudentOrder[]>([]);
   const [notifications, setNotifications] = useState<StudentNotification[]>([]);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
