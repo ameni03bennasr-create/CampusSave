@@ -10,12 +10,33 @@ const ExplorePage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [offers, setOffers] = useState([]);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  const fetchOffers = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'offers'));
+      const offersData = querySnapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      }));
+      setOffers(offersData);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des offres:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchOffers();
+}, []);
+
 
   // Liste unique des catégories pour le filtre
-  const categories = ['Tous', ...new Set(mockOffers.map(o => o.category))];
+  const categories = ['Tous', ...new Set(offers.map(o => o.category))];
 
   // Logique de filtrage
-  const filteredOffers = mockOffers.filter(offer => {
+  const filteredOffers = offers.filter(offer => {
     const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           offer.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'Tous' || offer.category === selectedCategory;
