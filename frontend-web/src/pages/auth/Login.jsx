@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,34 +12,28 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError('');
+
+  try {
+    // Vraie connexion Firebase
+    await login(email, password); 
+    
+    // La redirection sera gérée par Firebase, mais vous pouvez forcer 
+    // une redirection selon le rôle si besoin via navigate()
+    navigate('/'); 
+  } catch (err) {
+    setError("Email ou mot de passe incorrect.");
+    console.error(err);
+  } finally {
+    setIsLoading(false);
+  }
+};
  
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-
-    // Validation basique
-    if (!email.includes('@')) return setError('Email invalide.');
-    if (password.length < 6) return setError('Le mot de passe doit faire 6 caractères minimum.');
-
-    // Simulation d'échec pour tester la sécurité
-    if (password === 'error') {
-      return setError('Identifiants incorrects. Veuillez réessayer.');
-    }
-
-    // --- LOGIQUE DE DÉTECTION DU RÔLE (Simulation Backend) ---
-    let assignedRole = 'etudiant';
-    if (email.toLowerCase().includes('admin')) {
-      assignedRole = 'admin';
-    } else if (email.toLowerCase().includes('bistromontfleury') || email.toLowerCase().includes('commercant')) {
-      assignedRole = 'commercant';
-    }
-
-    const success = login(email, password, assignedRole);
-    if (success) {
-      navigate(`/${assignedRole}`); // Redirection selon le rôle détecté
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream p-4">

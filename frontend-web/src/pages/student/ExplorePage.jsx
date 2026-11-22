@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layouts/MainLayout';
 import OfferCard from '../../features/offers/components/OfferCard';
 import { mockOffers } from '../../features/offers/data/mockOffers';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 const ExplorePage = () => {
   const navigate = useNavigate();

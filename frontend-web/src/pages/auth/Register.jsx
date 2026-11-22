@@ -4,6 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
 import { Mail, Lock, User, Store, GraduationCap, Users } from 'lucide-react'; // Ajout de Users
 import logo from '../../assets/logo.png';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../../firebase';  
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -25,10 +29,39 @@ const Register = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
   };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
-  const handleRoleSelect = (role) => {
+  setIsLoading(true);
+  try {
+    // 1. Créer l'utilisateur dans Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+    
+    // 2. Enregistrer ses infos (rôle, nom) dans Firestore
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      name: formData.name,
+      email: formData.email,
+      role: formData.role,
+      createdAt: new Date().toISOString()
+    });
+
+    navigate('/verify-email', { state: { email: formData.email } });
+  } catch (err) {
+    setErrors({ email: "Cet email est déjà utilisé ou une erreur est survenue." });
+    console.error(err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  function handleRoleSelect(role) {
     setFormData(prev => ({ ...prev, role }));
-  };
+  }
 
   const validate = () => {
     const newErrors = {};
@@ -37,22 +70,6 @@ const Register = () => {
     if (formData.password.length < 6) newErrors.password = "Le mot de passe doit faire au moins 6 caractères.";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Les mots de passe ne correspondent pas.";
     return newErrors;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/verify-email', { state: { email: formData.email } });
-    }, 1500);
   };
 
   return (

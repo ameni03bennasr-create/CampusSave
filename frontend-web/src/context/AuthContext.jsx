@@ -1,4 +1,11 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -8,34 +15,46 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Simulation d'une session au chargement (à remplacer par Firebase onAuthStateChanged)
+  // Écouteur de l'état de connexion Firebase
   useEffect(() => {
-    const storedUser = localStorage.getItem('campussave_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Si l'utilisateur est connecté, on récupère ses infos (rôle, nom) dans Firestore
+        try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          if (userDocSnap.exists()) {
+            setUser({ uid: firebaseUser.uid, ...userDocSnap.data() });
+          } else {
+            // Fallback si le profil n'est pas encore créé dans Firestore
+            setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'etudiant', name: 'Utilisateur' });
+          }
+        } catch (error) {
+          console.error("Erreur de récupération du profil:", error);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = (email, password, role) => {
-    // Simulation de connexion
-    const mockUser = { email, role, name: role === 'etudiant' ? 'Yasmine' : 'Karim' };
-    setUser(mockUser);
-    localStorage.setItem('campussave_user', JSON.stringify(mockUser));
-    return true;
+  // Fonction de connexion
+  const login = async (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
+  // Fonction de déconnexion
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('campussave_user');
+    return signOut(auth);
   };
 
-  const updateProfile = (updatedData) => {
-    setUser(prev => {
-      const newUser = { ...prev, ...updatedData };
-      localStorage.setItem('campussave_user', JSON.stringify(newUser));
-      return newUser;
-    });
+  // (Optionnel) Fonction de mise à jour du profil
+  const updateProfile = async (data) => {
+    // À implémenter avec updateDoc si besoin
   };
 
   return (
