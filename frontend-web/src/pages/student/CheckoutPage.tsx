@@ -21,21 +21,21 @@ const CheckoutPage = ({ onNavigate }: CheckoutPageProps) => {
     }, 2000);
   };
 
-  if (isSuccess) {
+   if (isSuccess) {
     return (
-      <div className="max-w-lg mx-auto text-center py-20 bg-white rounded-3xl border border-[#E9C98B] shadow-sm mt-10">
+      <div className="max-w-lg mx-auto text-center py-20 bg-white rounded-3xl border border-[#E9C98B] shadow-sm mt-10 px-6">
         <CheckCircle2 className="w-20 h-20 text-[#4C6749] mx-auto mb-6" />
         <h1 className="text-3xl font-extrabold text-stone-800 mb-4">Commande Confirmée !</h1>
-        <p className="text-stone-600 mb-8">
-          Merci pour votre achat. Votre commande est prête.
-        </p>
-        <Button variant="secondary" onClick={() => onNavigate('orders')}>
-          Voir mes commandes
-        </Button>
+        <p className="text-stone-600 mb-8">Merci pour votre achat. Votre commande est prête.</p>
+        {/* AJOUT DE LA DIV FLEX POUR CENTRER */}
+        <div className="flex justify-center w-full">
+          <Button variant="secondary" onClick={() => onNavigate('orders')}>
+            Voir mes commandes
+          </Button>
+        </div>
       </div>
     );
   }
-
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-extrabold text-stone-800 mb-8 text-center">Paiement</h1>

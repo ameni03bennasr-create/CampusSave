@@ -15,7 +15,10 @@ import type { StudentNavigateOptions } from '@/types/navigation';
 import type { Restaurant, StudentOffer, StudentOrder, StudentProfile } from '@/types/student';
 import type { FormEvent } from 'react';
 import { EmptyState } from '@/components/common/EmptyState';
-
+import EcoPointsCard from '@/components/p5/EcoPointsCard';
+import EcoImpactDashboard from '@/components/p5/EcoImpactDashboard';
+import EcoBadgesGrid from '@/components/p5/EcoBadgesGrid';
+import SurpriseBasketCard from '@/components/p5/SurpriseBasketCard';
 // ============================================================================
 // PAGE 03 – ACCUEIL / TABLEAU DE BORD ÉTUDIANT
 // ============================================================================
@@ -29,6 +32,7 @@ interface StudentHomePageProps {
 
 export function StudentHomePage({ student, offers, restaurants, orders, onNavigate }: StudentHomePageProps) {
   const [searchInput, setSearchInput] = useState('');
+  const [basketExpiration] = useState(() => new Date(Date.now() + 2 * 60 * 60 * 1000));
 
   const featuredOffers = offers.filter((o) => o.featured && o.quantity > 0);
   const recentOffers = offers.filter((o) => o.isRecent && o.quantity > 0);
@@ -331,6 +335,30 @@ export function StudentHomePage({ student, offers, restaurants, orders, onNaviga
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* SECTION 4 : MODULES BONUS P5 */}
+      <section className="pt-8 border-t border-stone-200">
+        <h2 className="text-xl font-extrabold text-stone-900 mb-4">
+          Mes Avantages Éco-responsables 🌱
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <EcoPointsCard />
+          <EcoImpactDashboard />
+          <EcoBadgesGrid />
+          <SurpriseBasketCard
+            basket={{
+              titre: "Panier Surprise - Boulangerie",
+              nomCommerce: "Pâtisserie Le Délice",
+              description: "Assortiment de viennoiseries et pains invendus du jour.",
+              prixInitial: 15,
+              prixReduit: 5,
+              quantiteDisponible: 3,
+              horaireRecuperation: "18:00 - 19:30",
+              dateExpiration: basketExpiration
+            }}
+          />
         </div>
       </section>
     </div>

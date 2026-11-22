@@ -19,7 +19,7 @@ import type { ReactNode } from 'react';
 import type { StudentPageId } from '@/config/studentPages';
 import type { StudentWorkspace } from '@/hooks/useStudentWorkspace';
 import { Avatar } from '@/components/common/Avatar';
-
+import { useAuth } from '@/context/AuthContext'; // <-- Ajoutez ceci
 interface NavItem {
   id: StudentPageId;
   label: string;
@@ -44,6 +44,7 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
     currentPage,
     activeOrdersCount
   } = ws;
+    const { logout } = useAuth(); // <-- Ajoutez ceci
 
   // ==========================================================================
   // LAYOUT PRINCIPAL DE L'ESPACE ÉTUDIANT (DESKTOP SIDEBAR + MOBILE NAV)
@@ -180,17 +181,17 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
 
         {/* Bouton Déconnexion */}
         <div className="p-4 border-t border-[#F8F1E7]">
-          <button
+                    <button
             onClick={() => {
-              showToast('Vous avez été déconnecté(e) de votre session.');
+              logout(); // <-- LA VRAIE DÉCONNEXION
+              showToast('Vous avez été déconnecté(e).');
               navigateTo('login');
             }}
             className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-red-700 hover:bg-red-50 transition-colors"
           >
             <LogOut className="w-5 h-5" />
             Déconnexion
-          </button>
-        </div>
+          </button>        </div>
       </aside>
 
       {/* HEADER MOBILE & TABLETTE */}
