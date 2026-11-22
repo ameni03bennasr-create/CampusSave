@@ -1,21 +1,28 @@
-import { createContext } from 'react'
+import { createContext, useContext } from 'react';
 
-export type UserRole = 'student' | 'merchant' | 'admin'
-export type AuthStatus = 'loading' | 'unauthenticated' | 'authenticated'
+export type UserRole = 'student' | 'merchant' | 'admin';
+export type AuthStatus = 'loading' | 'unauthenticated' | 'authenticated';
 
 export interface AuthUser {
-  uid: string
-  role: UserRole
-  email: string | null
+  uid: string;
+  role: UserRole;
+  email: string | null;
+  name?: string;
 }
 
-export interface AuthState {
-  status: AuthStatus
-  user: AuthUser | null
+export interface AuthContextType {
+  status: AuthStatus;
+  user: AuthUser | null;
+  login: (role: UserRole, email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
-/**
- * Authentication state contract. Step 4 provides the real value from Firebase Authentication
- * (+ the role claim verified by the backend). Until then nobody is authenticated by default.
- */
-export const AuthContext = createContext<AuthState>({ status: 'unauthenticated', user: null })
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth doit être utilisé à l'intérieur d'un AuthProvider");
+  }
+  return context;
+};
