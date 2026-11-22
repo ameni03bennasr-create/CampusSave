@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
-import { Mail, Lock, User, Store, GraduationCap, Users } from 'lucide-react'; // Ajout de Users
+import { Mail, Lock, User, Store, GraduationCap, Users } from 'lucide-react';
 import logo from '../../assets/logo.png';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';  
-
 
 const Register = () => {
   const navigate = useNavigate();
@@ -29,39 +28,20 @@ const Register = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
   };
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  const validationErrors = validate();
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    return;
-  }
 
-  setIsLoading(true);
-  try {
-    // 1. Créer l'utilisateur dans Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-    
-    // 2. Enregistrer ses infos (rôle, nom) dans Firestore
-    await setDoc(doc(db, 'users', userCredential.user.uid), {
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      createdAt: new Date().toISOString()
-    });
+  const getNameLabel = () => {
+    if (formData.role === 'etudiant') return 'Nom complet';
+    if (formData.role === 'commercant') return "Nom de l'établissement";
+    if (formData.role === 'association') return 'Nom du club / association';
+    return 'Nom';
+  };
 
-    navigate('/verify-email', { state: { email: formData.email } });
-  } catch (err) {
-    setErrors({ email: "Cet email est déjà utilisé ou une erreur est survenue." });
-    console.error(err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  function handleRoleSelect(role) {
-    setFormData(prev => ({ ...prev, role }));
-  }
+  const getNamePlaceholder = () => {
+    if (formData.role === 'etudiant') return 'Ex: Yasmine Ben Ali';
+    if (formData.role === 'commercant') return 'Ex: Cafétéria ESSECT';
+    if (formData.role === 'association') return 'Ex: Club Informatique ESSECT';
+    return 'Entrez votre nom';
+  };
 
   const validate = () => {
     const newErrors = {};
@@ -70,6 +50,44 @@ const Register = () => {
     if (formData.password.length < 6) newErrors.password = "Le mot de passe doit faire au moins 6 caractères.";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Les mots de passe ne correspondent pas.";
     return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // 1. Créer l'utilisateur dans Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // 2. Enregistrer ses infos dans Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        createdAt: new Date().toISOString()
+      });
+
+      navigate('/verify-email', { state: { email: formData.email } });
+    } catch (err) {
+      console.error("ERREUR FIREBASE EXACTE :", err.code, err.message);
+      
+      if (err.code === 'auth/email-already-in-use') {
+        setErrors({ email: "Cet email est déjà utilisé." });
+      } else if (err.code === 'auth/weak-password') {
+        setErrors({ password: "Le mot de passe doit faire au moins 6 caractères." });
+      } else {
+        setErrors({ email: `Erreur : ${err.message}` });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -85,13 +103,12 @@ const Register = () => {
           
           <form className="space-y-6" onSubmit={handleSubmit}>
             
-            {/* Choix du rôle (3 boutons) */}
             <div>
               <label className="block text-sm font-bold text-stone-700 mb-2">Je suis un :</label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => handleRoleSelect('etudiant')}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'etudiant' }))}
                   className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all ${
                     formData.role === 'etudiant' 
                       ? 'border-[#4C6749] bg-[#4C6749]/10 text-[#4C6749]' 
@@ -103,7 +120,7 @@ const Register = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleRoleSelect('commercant')}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'commercant' }))}
                   className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all ${
                     formData.role === 'commercant' 
                       ? 'border-[#D98245] bg-[#D98245]/10 text-[#D98245]' 
@@ -115,7 +132,7 @@ const Register = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleRoleSelect('association')}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'association' }))}
                   className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all ${
                     formData.role === 'association' 
                       ? 'border-[#A84F32] bg-[#A84F32]/10 text-[#A84F32]' 
@@ -129,13 +146,13 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-stone-700">Nom complet / Nom du club</label>
+              <label className="block text-sm font-bold text-stone-700">{getNameLabel()}</label>
               <div className="mt-1 relative">
                 <User className="absolute left-3 top-3 w-5 h-5 text-stone-400" />
                 <input
                   type="text" name="name" value={formData.name} onChange={handleChange}
                   className={`pl-10 w-full px-3 py-2.5 border rounded-xl outline-none focus:border-[#A84F32] ${errors.name ? 'border-red-500' : 'border-stone-300'}`}
-                  placeholder="Ex: Club Informatique ESSECT"
+                  placeholder={getNamePlaceholder()}
                 />
               </div>
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -148,7 +165,7 @@ const Register = () => {
                 <input
                   type="email" name="email" value={formData.email} onChange={handleChange}
                   className={`pl-10 w-full px-3 py-2.5 border rounded-xl outline-none focus:border-[#A84F32] ${errors.email ? 'border-red-500' : 'border-stone-300'}`}
-                  placeholder="contact@club.com"
+                  placeholder="contact@exemple.com"
                 />
               </div>
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}

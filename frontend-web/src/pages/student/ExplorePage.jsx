@@ -1,47 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layouts/MainLayout';
 import OfferCard from '../../features/offers/components/OfferCard';
-import { mockOffers } from '../../features/offers/data/mockOffers';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase"; // L'import qui posait problème
 
 const ExplorePage = () => {
   const navigate = useNavigate();
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
-  const [offers, setOffers] = useState([]);
-const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchOffers = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'offers'));
-      const offersData = querySnapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      }));
-      setOffers(offersData);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des offres:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchOffers();
-}, []);
+  // Récupération des offres depuis Firestore
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'offres'));
+        const offersData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setOffers(offersData);
+      } catch (error) {
+        console.error("Erreur de récupération des offres:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchOffers();
+  }, []);
 
-  // Liste unique des catégories pour le filtre
+  // Filtrage
   const categories = ['Tous', ...new Set(offers.map(o => o.category))];
-
-  // Logique de filtrage
   const filteredOffers = offers.filter(offer => {
-    const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          offer.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = offer.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          offer.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'Tous' || offer.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-stone-500 font-bold">Chargement des offres...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -50,7 +58,6 @@ useEffect(() => {
         <p className="text-stone-500">Trouvez les meilleures offres près de chez vous.</p>
       </div>
 
-      {/* Barre de recherche et filtres */}
       <div className="bg-white p-4 rounded-2xl border border-[#E9C98B] shadow-sm mb-8 flex flex-col md:flex-row gap-4">
         <input 
           type="text" 
@@ -70,10 +77,9 @@ useEffect(() => {
         </select>
       </div>
 
-      {/* Grille d'offres */}
       {filteredOffers.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-stone-200">
-          <p className="text-lg text-stone-500">Aucune offre ne correspond à votre recherche.</p>
+          <p className="text-lg text-stone-500">Aucune offre disponible pour le moment.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
