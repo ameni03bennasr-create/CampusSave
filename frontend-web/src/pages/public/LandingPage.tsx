@@ -9,6 +9,7 @@ import {
   Store,
   Tag,
   Wallet,
+  Users,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -23,26 +24,10 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  {
-    icon: Store,
-    title: 'Les commerçants publient',
-    text: 'Restaurants et cafétérias proposent leurs invendus du jour à prix réduit, avec un créneau de retrait.',
-  },
-  {
-    icon: Search,
-    title: 'Les étudiants réservent',
-    text: 'Parcourez les offres autour du campus, choisissez vos quantités et réservez en quelques clics.',
-  },
-  {
-    icon: CreditCard,
-    title: 'Paiement en ligne sécurisé',
-    text: 'Le paiement s’effectue en ligne via un prestataire de paiement. CampusSave ne stocke aucune donnée bancaire.',
-  },
-  {
-    icon: QrCode,
-    title: 'Retrait par QR Code',
-    text: 'Un QR Code unique est généré après confirmation du paiement : le commerçant le scanne au comptoir.',
-  },
+  { icon: Store, title: 'Les commerçants publient', text: 'Restaurants et cafétérias proposent leurs invendus du jour à prix réduit, avec un créneau de retrait.' },
+  { icon: Search, title: 'Les étudiants réservent', text: 'Parcourez les offres autour du campus, choisissez vos quantités et réservez en quelques clics.' },
+  { icon: CreditCard, title: 'Paiement en ligne sécurisé', text: 'Le paiement s’effectue en ligne via un prestataire de paiement. CampusSave ne stocke aucune donnée bancaire.' },
+  { icon: QrCode, title: 'Retrait par QR Code', text: 'Un QR Code unique est généré après confirmation du paiement : le commerçant le scanne au comptoir.' },
 ]
 
 const BENEFITS: Step[] = [
@@ -71,6 +56,14 @@ const SPACES: SpaceCard[] = [
     register: { to: '/student/register', label: 'Créer un compte' },
   },
   {
+    key: 'association',
+    icon: Users,
+    title: 'Association / Club',
+    text: 'Commandez en groupe pour vos événements, gérez les demandes groupées et les achats de votre club.',
+    loginTo: '/association/login',
+    register: { to: '/association/register', label: 'Créer un compte club' },
+  },
+  {
     key: 'merchant',
     icon: Store,
     title: 'Commerçant',
@@ -96,7 +89,9 @@ const secondaryBtn =
 
 export default function LandingPage() {
   useDocumentTitle('Moins de gaspillage, plus de partage')
-  const { status, user } = useAuth()
+  const auth = useAuth()
+  const status = auth?.status
+  const user = auth?.user
 
   return (
     <div className="min-h-screen bg-[#F8F1E7] text-stone-800 flex flex-col scroll-smooth">
@@ -155,16 +150,6 @@ export default function LandingPage() {
                 Choisir mon espace
               </a>
             </div>
-            <p className="mt-4 text-xs text-stone-500">
-              Déjà inscrit ?{' '}
-              <Link to="/student/login" className="font-bold text-[#A84F32] hover:underline">
-                Se connecter
-              </Link>
-              {' '}• Commerçant ?{' '}
-              <Link to="/merchant/register" className="font-bold text-[#A84F32] hover:underline">
-                Demander un compte
-              </Link>
-            </p>
           </div>
 
           <div className="lg:col-span-5">
@@ -217,7 +202,7 @@ export default function LandingPage() {
             <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold text-stone-900">Choisissez votre espace</h2>
             <p className="mt-2 text-sm text-stone-600">Chaque profil dispose de son propre espace, adapté à ses besoins.</p>
           </div>
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
+          <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {SPACES.map(({ key, icon: Icon, title, text, note, loginTo, register }) => (
               <article key={key} className="bg-white rounded-3xl border border-[#E9C98B]/60 shadow-sm p-7 flex flex-col">
                 <span className="w-12 h-12 rounded-2xl bg-[#A84F32]/10 text-[#A84F32] flex items-center justify-center">
@@ -253,24 +238,6 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
-
-        {/* Appel à l'action final */}
-        <section className="px-4 sm:px-6 pb-16">
-          <div className="max-w-6xl mx-auto bg-[#A84F32] rounded-[2rem] px-6 sm:px-12 py-12 text-center text-white">
-            <h2 className="text-2xl sm:text-3xl font-extrabold">Prêt à sauver votre prochain repas ?</h2>
-            <p className="mt-2 text-white/85 text-sm sm:text-base max-w-xl mx-auto">
-              Rejoignez CampusSave et participez à un campus plus responsable.
-            </p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link to="/student/register" className="inline-flex px-6 py-3 rounded-xl bg-white text-[#A84F32] text-sm font-extrabold hover:bg-[#F8F1E7] transition-colors">
-                Créer un compte étudiant
-              </Link>
-              <Link to="/merchant/register" className="inline-flex px-6 py-3 rounded-xl border border-white/60 text-white text-sm font-bold hover:bg-white/10 transition-colors">
-                Je suis commerçant
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="bg-white border-t border-[#E9C98B]/50">
@@ -278,6 +245,7 @@ export default function LandingPage() {
           <BrandLogo className="h-14 w-auto self-start" />
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-stone-600" aria-label="Accès rapide">
             <Link to="/student/login" className="hover:text-[#A84F32]">Espace Étudiant</Link>
+            <Link to="/association/login" className="hover:text-[#A84F32]">Espace Association</Link>
             <Link to="/merchant/login" className="hover:text-[#A84F32]">Espace Commerçant</Link>
             <Link to="/admin/login" className="hover:text-[#A84F32]">Espace Administrateur</Link>
           </nav>

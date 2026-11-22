@@ -1,3 +1,5 @@
+// cspell:locale fr-FR
+
 import {
   BarChart3,
   CheckCircle2,
