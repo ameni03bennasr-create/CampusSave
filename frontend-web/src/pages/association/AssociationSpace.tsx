@@ -4,37 +4,62 @@ import { AssociationAuthLayout } from '@/layouts/AssociationAuthLayout';
 import { AssociationHomePage } from './AssociationHomePage';
 import { AssociationRegisterPage } from './AssociationRegisterPage';
 import { AssociationLoginPage } from './AssociationLoginPage';
+import { AssociationProfilePage } from './AssociationProfilePage';
+import { AssociationExplorePage } from './AssociationExplorePage';
+import { AssociationOrdersPage } from './AssociationOrdersPage';
+
+// Reuse the student pages that already support the shared cart.
+import CartPage from '@/pages/student/CartPage';
+import CheckoutPage from '@/pages/student/CheckoutPage';
+import { OfferDetailsPage } from '@/pages/student/OfferDetailsPage';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Tag } from 'lucide-react';
+import type { ComponentProps } from 'react';
 
 export default function AssociationSpace() {
   const ws = useAssociationWorkspace();
-  const { currentPage, navigateTo } = ws;
+  const { currentPage, navigateTo, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity } = ws;
 
-  // 1. GESTION DE L'AUTHENTIFICATION (Login & Register)
   if (currentPage === 'login' || currentPage === 'register') {
     return (
       <AssociationAuthLayout>
         {currentPage === 'register' ? (
           <AssociationRegisterPage onGoLogin={() => navigateTo('login')} />
         ) : (
-          <AssociationLoginPage 
-            onGoRegister={() => navigateTo('register')} 
-            onLogin={() => navigateTo('home')} // Simule une connexion réussie
-          />
+          <AssociationLoginPage onGoRegister={() => navigateTo('register')} onLogin={() => navigateTo('home')} />
         )}
       </AssociationAuthLayout>
     );
   }
 
-  // 2. GESTION DE L'ESPACE CONNECTÉ (Tableau de bord, Panier, etc.)
+  const selectedRestaurant = selectedOffer ? getRestaurant(selectedOffer.restaurantId) : undefined;
+
   return (
     <AssociationLayout ws={ws}>
       {currentPage === 'home' && <AssociationHomePage ws={ws} />}
-      {currentPage === 'explore' && <EmptyState icon={Tag} title="Catalogue" description="Les offres s'afficheront ici." />}
-      {currentPage === 'cart' && <EmptyState icon={Tag} title="Panier Groupé" description="Votre panier s'affichera ici." />}
-      {currentPage === 'orders' && <EmptyState icon={Tag} title="Demandes Groupées" description="Vos demandes s'afficheront ici." />}
-      {currentPage === 'profile' && <EmptyState icon={Tag} title="Profil" description="Le profil du club s'affichera ici." />}
+      
+      {currentPage === 'explore' && <AssociationExplorePage ws={ws} />}
+      
+      {/* Reuse the student offer details page, which supports adding items to the cart. */}
+      {(currentPage as string) === 'offer-details' && (selectedOffer && selectedRestaurant ? (
+        <OfferDetailsPage 
+          offer={selectedOffer as ComponentProps<typeof OfferDetailsPage>['offer']} 
+          restaurant={selectedRestaurant as ComponentProps<typeof OfferDetailsPage>['restaurant']} 
+          quantity={draftQuantity} 
+          setQuantity={setDraftQuantity} 
+          onNavigate={navigateTo as ComponentProps<typeof OfferDetailsPage>['onNavigate']} 
+        />
+      ) : (
+        <EmptyState icon={Tag} title="No offer selected" description="Return to the catalog." />
+      ))}
+
+      {/* Reuse the student cart and checkout pages. */}
+      {currentPage === 'cart' && <CartPage onNavigate={navigateTo as ComponentProps<typeof CartPage>['onNavigate']} />}
+      {currentPage === 'checkout' && <CheckoutPage onNavigate={navigateTo as ComponentProps<typeof CheckoutPage>['onNavigate']} />}
+      
+      {currentPage === 'orders' && <AssociationOrdersPage />}
+      
+      {currentPage === 'profile' && <AssociationProfilePage ws={ws} />}
     </AssociationLayout>
   );
 }
