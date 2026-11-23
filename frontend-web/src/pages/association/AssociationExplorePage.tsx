@@ -63,7 +63,7 @@ export function AssociationExplorePage({ ws }: { ws: AssociationWorkspace }) {
                   <span className="text-lg font-extrabold text-[#4C6749]">{formatPrice(offer.reducedPrice)}</span>
                   <span className="text-xs text-stone-400 line-through">{formatPrice(offer.initialPrice)}</span>
                 </div>
-                <div className="mt-4 pt-4 border-t border-stone-100 flex gap-2 mt-auto">
+                <div className="pt-4 border-t border-stone-100 flex gap-2 mt-auto">
                   <Button onClick={() => handleAddToCart(offer)} className="flex-1 bg-[#4C6749] text-white flex items-center justify-center gap-2">
                     <ShoppingCart className="w-4 h-4" /> Ajouter
                   </Button>
