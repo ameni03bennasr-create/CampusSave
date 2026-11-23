@@ -4,25 +4,27 @@ import BrandLogo from '@/components/brand/BrandLogo';
 import type { ReactNode } from 'react';
 import type { AssociationWorkspace } from '@/hooks/useAssociationWorkspace';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 export function AssociationLayout({ ws, children }: { ws: AssociationWorkspace, children: ReactNode }) {
   const { currentPage, navigateTo, mobileMenuOpen, setMobileMenuOpen, association, toast } = ws;
   const { logout } = useAuth();
+  const { getCartCount } = useCart();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const cartCount = getCartCount();
+
   const navItems = [
-    { id: 'home', label: 'Accueil Club', icon: Home },
-    { id: 'explore', label: 'Explorer', icon: Search },
-    { id: 'cart', label: 'Panier Groupé', icon: ShoppingCart },
-    { id: 'orders', label: 'Demandes Groupées', icon: ShoppingBag },
-    { id: 'profile', label: 'Profil du Club', icon: User },
+    { id: 'home', label: 'Accueil Club', icon: Home, badge: null },
+    { id: 'explore', label: 'Explorer', icon: Search, badge: null },
+    { id: 'cart', label: 'Panier Groupé', icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null }, // <-- Badge
+    { id: 'orders', label: 'Demandes Groupées', icon: ShoppingBag, badge: null },
+    { id: 'profile', label: 'Profil du Club', icon: User, badge: null },
   ] as const;
 
   return (
     <div className="min-h-screen bg-[#F8F1E7] text-stone-800 flex flex-col lg:flex-row">
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-4 py-3 rounded-2xl shadow-2xl">{toast.message}</div>
-      )}
+      {toast && <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-4 py-3 rounded-2xl shadow-2xl">{toast.message}</div>}
 
       <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-[#E9C98B]/60 z-30 transition-all duration-300 ${isCollapsed ? 'lg:w-20' : 'lg:w-72'}`}>
         <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-8 bg-white border border-[#E9C98B] rounded-full p-1 z-50 text-stone-500 hover:text-[#A84F32] shadow-sm">
@@ -40,13 +42,8 @@ export function AssociationLayout({ ws, children }: { ws: AssociationWorkspace, 
 
         <div className={`px-4 pt-4 pb-2 ${isCollapsed ? 'flex justify-center px-2' : ''}`}>
           <div onClick={() => navigateTo('profile')} className={`p-3.5 rounded-2xl bg-[#F8F1E7]/85 border border-[#E9C98B]/60 flex items-center cursor-pointer ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-            {/* AFFICHAGE DE L'AVATAR DANS LA SIDEBAR */}
             <div className="w-10 h-10 rounded-xl bg-[#A84F32] text-white flex items-center justify-center shrink-0 overflow-hidden">
-              {association.avatar ? (
-                <img src={association.avatar} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <Users className="w-5 h-5" />
-              )}
+              {association.avatar ? <img src={association.avatar} alt="Logo" className="w-full h-full object-cover" /> : <Users className="w-5 h-5" />}
             </div>
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
@@ -64,6 +61,9 @@ export function AssociationLayout({ ws, children }: { ws: AssociationWorkspace, 
                 <item.icon className="w-4 h-4" />
                 {!isCollapsed && <span>{item.label}</span>}
               </span>
+              {!isCollapsed && item.badge && (
+                <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${currentPage === item.id ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
+              )}
             </button>
           ))}
         </nav>
