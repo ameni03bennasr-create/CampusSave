@@ -40,7 +40,14 @@ export function AssociationLayout({ ws, children }: { ws: AssociationWorkspace, 
 
         <div className={`px-4 pt-4 pb-2 ${isCollapsed ? 'flex justify-center px-2' : ''}`}>
           <div onClick={() => navigateTo('profile')} className={`p-3.5 rounded-2xl bg-[#F8F1E7]/85 border border-[#E9C98B]/60 flex items-center cursor-pointer ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className="w-10 h-10 rounded-xl bg-[#A84F32] text-white flex items-center justify-center shrink-0"><Users className="w-5 h-5" /></div>
+            {/* AFFICHAGE DE L'AVATAR DANS LA SIDEBAR */}
+            <div className="w-10 h-10 rounded-xl bg-[#A84F32] text-white flex items-center justify-center shrink-0 overflow-hidden">
+              {association.avatar ? (
+                <img src={association.avatar} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <Users className="w-5 h-5" />
+              )}
+            </div>
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-extrabold text-stone-900 truncate">{association.name}</p>

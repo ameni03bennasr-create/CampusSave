@@ -8,7 +8,6 @@ import { AssociationProfilePage } from './AssociationProfilePage';
 import { AssociationExplorePage } from './AssociationExplorePage';
 import { AssociationOrdersPage } from './AssociationOrdersPage';
 
-// Reuse the student pages that already support the shared cart.
 import CartPage from '@/pages/student/CartPage';
 import CheckoutPage from '@/pages/student/CheckoutPage';
 import { OfferDetailsPage } from '@/pages/student/OfferDetailsPage';
@@ -18,7 +17,7 @@ import type { ComponentProps } from 'react';
 
 export default function AssociationSpace() {
   const ws = useAssociationWorkspace();
-  const { currentPage, navigateTo, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity } = ws;
+  const { currentPage, navigateTo, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity, showToast } = ws;
 
   if (currentPage === 'login' || currentPage === 'register') {
     return (
@@ -37,10 +36,8 @@ export default function AssociationSpace() {
   return (
     <AssociationLayout ws={ws}>
       {currentPage === 'home' && <AssociationHomePage ws={ws} />}
-      
       {currentPage === 'explore' && <AssociationExplorePage ws={ws} />}
       
-      {/* Reuse the student offer details page, which supports adding items to the cart. */}
       {(currentPage as string) === 'offer-details' && (selectedOffer && selectedRestaurant ? (
         <OfferDetailsPage 
           offer={selectedOffer as ComponentProps<typeof OfferDetailsPage>['offer']} 
@@ -48,17 +45,15 @@ export default function AssociationSpace() {
           quantity={draftQuantity} 
           setQuantity={setDraftQuantity} 
           onNavigate={navigateTo as ComponentProps<typeof OfferDetailsPage>['onNavigate']} 
+          onShowToast={showToast} // <-- Ajouté ici
         />
       ) : (
-        <EmptyState icon={Tag} title="No offer selected" description="Return to the catalog." />
+        <EmptyState icon={Tag} title="Aucune offre sélectionnée" description="Retournez au catalogue." />
       ))}
 
-      {/* Reuse the student cart and checkout pages. */}
       {currentPage === 'cart' && <CartPage onNavigate={navigateTo as ComponentProps<typeof CartPage>['onNavigate']} />}
       {currentPage === 'checkout' && <CheckoutPage onNavigate={navigateTo as ComponentProps<typeof CheckoutPage>['onNavigate']} />}
-      
       {currentPage === 'orders' && <AssociationOrdersPage />}
-      
       {currentPage === 'profile' && <AssociationProfilePage ws={ws} />}
     </AssociationLayout>
   );

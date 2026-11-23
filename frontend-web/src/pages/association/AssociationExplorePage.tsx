@@ -6,18 +6,11 @@ import { useState } from 'react';
 import type { AssociationWorkspace } from '@/hooks/useAssociationWorkspace';
 
 interface ExploreOffer {
-  id: string;
-  title: string;
-  category: string;
-  image: string;
-  initialPrice: number;
-  reducedPrice: number;
-  quantity: number;
-  restaurantId: string;
+  id: string; title: string; category: string; image: string; initialPrice: number; reducedPrice: number; quantity: number; restaurantId: string;
 }
 
 export function AssociationExplorePage({ ws }: { ws: AssociationWorkspace }) {
-  const { offers, restaurants, navigateTo } = ws;
+  const { offers, restaurants, navigateTo, showToast } = ws; // On récupère showToast
   const { addToCart } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -29,6 +22,7 @@ export function AssociationExplorePage({ ws }: { ws: AssociationWorkspace }) {
       initialPrice: offer.initialPrice, discountedPrice: offer.reducedPrice, quantity: offer.quantity,
     };
     addToCart(cartOffer, 1);
+    showToast(`${offer.title} ajouté au panier groupé !`); // <-- TOAST
     navigateTo('cart');
   };
 
@@ -41,13 +35,7 @@ export function AssociationExplorePage({ ws }: { ws: AssociationWorkspace }) {
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-3 w-5 h-5 text-stone-400" />
-        <input 
-          type="text" 
-          placeholder="Rechercher un produit..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-300 focus:border-[#A84F32] outline-none"
-        />
+        <input type="text" placeholder="Rechercher un produit..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-300 focus:border-[#A84F32] outline-none" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

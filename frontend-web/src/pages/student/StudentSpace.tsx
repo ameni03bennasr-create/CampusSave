@@ -53,23 +53,9 @@ export default function StudentSpace() {
   const authView = (
     <StudentAuthLayout>
       {currentPage === 'register' ? (
-        <StudentRegisterPage
-          onSubmit={async (form) => {
-            await authService.signUpStudent(form);
-            await login('student', form.email, form.password); 
-            navigateTo('home');
-          }}
-          onGoLogin={() => navigateTo('login')}
-        />
+        <StudentRegisterPage onSubmit={async (form) => { await authService.signUpStudent(form); await login('student', form.email, form.password); navigateTo('home'); }} onGoLogin={() => navigateTo('login')} />
       ) : (
-        <StudentLoginPage
-          onSubmit={async (email, password) => {
-            await login('student', email, password); 
-            navigateTo('home');
-          }}
-          onForgotPassword={(email) => authService.sendPasswordReset(email)}
-          onGoRegister={() => navigateTo('register')}
-        />
+        <StudentLoginPage onSubmit={async (email, password) => { await login('student', email, password); navigateTo('home'); }} onForgotPassword={(email) => authService.sendPasswordReset(email)} onGoRegister={() => navigateTo('register')} />
       )}
     </StudentAuthLayout>
   );
@@ -80,7 +66,19 @@ export default function StudentSpace() {
       {currentPage === 'cart' && <CartPage onNavigate={navigateTo} />}
       {currentPage === 'checkout' && <CheckoutPage onNavigate={navigateTo} />}
       {currentPage === 'explore' && <ExploreOffersPage offers={offers} restaurants={restaurants} initialSearchProduct={exploreSearchProduct} initialSearchRestaurant={exploreSearchRestaurant} initialCategory={exploreCategory} onNavigate={navigateTo} />}
-      {currentPage === 'offer-details' && (selectedOffer && selectedRestaurant ? <OfferDetailsPage offer={selectedOffer} restaurant={selectedRestaurant} quantity={draftQuantity} setQuantity={setDraftQuantity} onNavigate={navigateTo} /> : noOffer)}
+      
+      {/* Ajout de onShowToast ici */}
+      {currentPage === 'offer-details' && (selectedOffer && selectedRestaurant ? (
+        <OfferDetailsPage 
+          offer={selectedOffer} 
+          restaurant={selectedRestaurant} 
+          quantity={draftQuantity} 
+          setQuantity={setDraftQuantity} 
+          onNavigate={navigateTo} 
+          onShowToast={showToast} 
+        />
+      ) : noOffer)}
+
       {currentPage === 'reservation' && (selectedOffer && selectedRestaurant ? <ReservationPage offer={selectedOffer} restaurant={selectedRestaurant} quantity={draftQuantity} setQuantity={setDraftQuantity} student={student} onConfirmReservation={() => handleCreatePendingOrder(selectedOffer, draftQuantity)} onNavigate={navigateTo} /> : noOffer)}
       {currentPage === 'order-summary' && (activeOrder && activeRestaurant ? <OrderSummaryPage order={activeOrder} restaurant={activeRestaurant} student={student} onNavigate={navigateTo} /> : noOrder)}
       {currentPage === 'payment' && (activeOrder ? <ElectronicPaymentPage order={activeOrder} onPay={async (method) => { const { paymentUrl } = await paymentService.startPayment(activeOrder.id, method); window.location.assign(paymentUrl); }} onNavigate={navigateTo} /> : <EmptyState icon={CreditCard} title="Aucun paiement en attente" description="Réservez une offre pour pouvoir la régler en ligne." action={{ label: 'Explorer les offres', onClick: () => navigateTo('explore') }} />)}
@@ -89,7 +87,7 @@ export default function StudentSpace() {
       {currentPage === 'order-details' && (activeOrder && activeRestaurant ? <OrderDetailsPage order={activeOrder} restaurant={activeRestaurant} onNavigate={navigateTo} /> : noOrder)}
       {currentPage === 'profile' && <StudentProfilePage student={student} onUpdateStudent={(updated) => { setStudent(updated); showToast('Vos informations personnelles ont été mises à jour.'); }} />}
       {currentPage === 'notifications' && <NotificationsPage notifications={notifications} onMarkAllRead={() => { setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))); showToast('Toutes les notifications ont été marquées comme lues.'); }} onToggleRead={(id) => { setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))); }} onOpenOrder={(orderId) => navigateTo('order-details', { orderId })} />}
-      {currentPage === 'statistics' && <StudentStatisticsPage student={student} orders={orders} offers={offers} restaurants={restaurants} onNavigate={navigateTo} />}
+      {currentPage === 'statistics' && <StudentStatisticsPage student={student} orders={orders} offers={offers} restaurants={restaurants} onNavigate={(page, options) => navigateTo(page as typeof currentPage, options)} />}
     </StudentLayout>
   );
 

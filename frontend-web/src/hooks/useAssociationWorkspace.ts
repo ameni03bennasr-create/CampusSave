@@ -7,31 +7,11 @@ import type { ToastKind, ToastState } from '@/types/ui';
 import type { StudentNavigateOptions } from '@/types/navigation';
 
 interface Restaurant {
-  id: string;
-  name: string;
-  address: string;
-  distanceMeters: number;
-  type: string;
-  pickupHours: string;
-  activeOffersCount: number;
-  coords: { x: number; y: number };
+  id: string; name: string; address: string; distanceMeters: number; type: string; pickupHours: string; activeOffersCount: number; coords: { x: number; y: number };
 }
 
 interface Offer {
-  id: string;
-  title: string;
-  description: string;
-  initialPrice: number;
-  reducedPrice: number;
-  category: string;
-  image: string;
-  quantity: number;
-  pickupHours: string;
-  restaurantId: string;
-  weightKg: number;
-  featured: boolean;
-  isRecent: boolean;
-  isSurpriseBasket: boolean;
+  id: string; title: string; description: string; initialPrice: number; reducedPrice: number; category: string; image: string; quantity: number; pickupHours: string; restaurantId: string; weightKg: number; featured: boolean; isRecent: boolean; isSurpriseBasket: boolean;
 }
 
 const MOCK_RESTAURANTS: Restaurant[] = [
@@ -53,13 +33,20 @@ export function useAssociationWorkspace() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
   
-  // Données
   const [offers] = useState<Offer[]>(MOCK_OFFERS);
   const [restaurants] = useState<Restaurant[]>(MOCK_RESTAURANTS);
   
-  // Navigation State (pour le parcours d'achat)
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [draftQuantity, setDraftQuantity] = useState(1);
+
+  // 1. On rend l'association dynamique avec un état
+  const [association, setAssociation] = useState({
+    name: 'Club Informatique ESSECT',
+    memberCount: 45,
+    university: 'Université de Tunis',
+    email: 'contact@ci-essect.tn',
+    avatar: null as string | null
+  });
 
   const showToast = (message: string, type: ToastKind = 'success') => {
     setToast({ message, type });
@@ -82,7 +69,7 @@ export function useAssociationWorkspace() {
   return {
     currentPage, isKnownPage, mobileMenuOpen, setMobileMenuOpen, toast, showToast, navigateTo,
     offers, restaurants, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity,
-    association: { name: 'Club Informatique ESSECT', memberCount: 45, university: 'Université de Tunis', email: 'contact@ci-essect.tn' }
+    association, setAssociation // <-- Export de l'état pour le profil
   };
 }
 export type AssociationWorkspace = ReturnType<typeof useAssociationWorkspace>;
