@@ -1,16 +1,11 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 
 import '../data/models/merchant_models.dart';
 import '../data/models/student_models.dart';
 import '../data/models/user_role.dart';
 import '../data/repositories/repositories.dart';
 
-/// Session utilisateur (rôle courant) — équivalent de `AuthContext`.
-///
-/// **Frontend uniquement** : la connexion est validée localement puis mémorisée
-/// en mémoire. Avec Firebase Authentication, seules les méthodes de cette
-/// classe changent (`signInWithEmailAndPassword`, `createUserWithEmailAndPassword`,
-/// `signOut`) : les gardes de navigation et les écrans restent identiques.
+/// Session utilisateur (rôle courant).
 class AuthController extends ChangeNotifier {
   AuthController(this._repository);
 
@@ -34,7 +29,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Connexion dans un espace donné (le rôle est celui de l'espace choisi).
+  /// Connexion dans un espace donné, puis résolution du rôle réel côté backend.
   Future<bool> signIn({
     required UserRole role,
     required String email,
@@ -44,9 +39,14 @@ class AuthController extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _repository.signIn(email: email, password: password);
-      _role = role;
-      _email = email.trim();
+      final trimmedEmail = email.trim();
+      await _repository.signIn(email: trimmedEmail, password: password);
+      final resolvedRole = await _repository.resolveRole(
+        email: trimmedEmail,
+        fallbackRole: role,
+      );
+      _role = resolvedRole;
+      _email = trimmedEmail;
       _displayName = null;
       return true;
     } on AuthException catch (e) {
@@ -85,7 +85,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
     try {
       await _repository.requestMerchantAccount(form);
-      _role = UserRole.merchant;
+      _role = UserRole.merchantPending;
       _email = form.email.trim();
       _displayName = form.merchantFullName.trim();
       return true;

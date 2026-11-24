@@ -1,17 +1,14 @@
-/// Contrats d'accès aux données, et implémentations de démonstration.
+﻿/// Contrats d'accès aux données, et implémentations de démonstration.
 ///
 /// **Point d'intégration backend** : chaque écran ne dépend que des
 /// `ChangeNotifier` de `lib/state`, eux-mêmes alimentés par ces interfaces.
-/// Lorsque l'API REST / Firebase sera disponible, il suffira de fournir une
-/// implémentation HTTP de ces mêmes interfaces (voir
-/// `lib/data/repositories/http_repositories.dart.example`) puis de la passer à
-/// `AppRoot` : aucun écran n'aura à changer.
 library;
 
 import '../mock/mock_data.dart';
 import '../models/admin_models.dart';
 import '../models/merchant_models.dart';
 import '../models/student_models.dart';
+import '../models/user_role.dart';
 
 /// Latence simulée pour rendre visibles les états de chargement de l'interface.
 const Duration _kMockLatency = Duration(milliseconds: 220);
@@ -23,6 +20,13 @@ abstract interface class AuthRepository {
     required String email,
     required String password,
   });
+
+  /// Résout le rôle effectif de l'utilisateur connecté (ex. depuis Firestore).
+  Future<UserRole> resolveRole({
+    required String email,
+    required UserRole fallbackRole,
+  }) async =>
+      fallbackRole;
 
   /// Création d'un compte étudiant.
   Future<void> registerStudent(StudentRegistrationForm form);
@@ -93,6 +97,15 @@ class MockAuthRepository implements AuthRepository {
     if (email.trim().isEmpty || password.isEmpty) {
       throw const AuthException('Identifiants incomplets.');
     }
+  }
+
+  @override
+  Future<UserRole> resolveRole({
+    required String email,
+    required UserRole fallbackRole,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    return fallbackRole;
   }
 
   @override

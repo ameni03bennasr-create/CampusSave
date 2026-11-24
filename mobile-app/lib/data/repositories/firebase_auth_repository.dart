@@ -45,6 +45,46 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserRole> resolveRole({
+    required String email,
+    required UserRole fallbackRole,
+  }) async {
+    if (!await _useFirebase()) {
+      return _fallback.resolveRole(email: email, fallbackRole: fallbackRole);
+    }
+
+    final user = FirebaseService.auth.currentUser;
+    if (user == null) {
+      return fallbackRole;
+    }
+
+    try {
+      final doc = await FirebaseService.firestore
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final data = doc.data();
+      if (!doc.exists || data == null) {
+        return fallbackRole;
+      }
+
+      final rawRole = data['role']?.toString();
+      final resolved = UserRole.fromBackendCode(rawRole, fallback: fallbackRole);
+      final status = data['status']?.toString().trim().toLowerCase();
+      final isPending = data['pendingMerchant'] == true ||
+          status == 'pending' ||
+          status == 'en_attente';
+
+      if (resolved == UserRole.merchant && isPending) {
+        return UserRole.merchantPending;
+      }
+      return resolved;
+    } on FirebaseException {
+      return fallbackRole;
+    }
+  }
+
+  @override
   Future<void> registerStudent(StudentRegistrationForm form) async {
     if (!await _useFirebase()) {
       return _fallback.registerStudent(form);
@@ -166,5 +206,3 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 }
-
-
