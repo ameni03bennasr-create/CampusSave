@@ -86,7 +86,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(
+          const PageHeader(
             title: 'Paramètres',
             eyebrow: 'ADMINISTRATION',
             subtitle:
@@ -223,7 +223,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 const SizedBox(height: 10),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  activeColor: AppColors.green,
+                  activeThumbColor: AppColors.green,
                   title: Text(
                     'Candidatures commerçants',
                     style: AppText.xs(
@@ -241,7 +241,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 const Divider(height: 12),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  activeColor: AppColors.green,
+                  activeThumbColor: AppColors.green,
                   title: Text(
                     'Paiements contestés ou échoués',
                     style: AppText.xs(
@@ -260,7 +260,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 const Divider(height: 12),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  activeColor: AppColors.green,
+                  activeThumbColor: AppColors.green,
                   title: Text(
                     'Rapport quotidien récapitulatif',
                     style: AppText.xs(

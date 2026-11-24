@@ -76,7 +76,7 @@ class _AdminMerchantsScreenState extends State<AdminMerchantsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Gestion des commerçants',
           eyebrow: 'ADMINISTRATION',
           subtitle:
@@ -165,7 +165,7 @@ class _AdminMerchantsScreenState extends State<AdminMerchantsScreen> {
 
         // --- Liste des commerçants ---
         if (filteredMerchants.isEmpty)
-          EmptyState(
+          const EmptyState(
             title: 'Aucun commerçant trouvé',
             description:
                 'Aucun établissement ne correspond aux filtres appliqués.',

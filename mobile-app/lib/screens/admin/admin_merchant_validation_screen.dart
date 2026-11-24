@@ -112,7 +112,7 @@ class AdminMerchantValidationScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Validation des commerçants',
           eyebrow: 'CONFORMITÉ & SÉCURITÉ',
           subtitle:
@@ -184,7 +184,7 @@ class AdminMerchantValidationScreen extends StatelessWidget {
 
         // --- Liste des dossiers en attente ---
         if (pendingMerchants.isEmpty)
-          EmptyState(
+          const EmptyState(
             title: 'Aucune demande en attente',
             description:
                 'Toutes les candidatures commerçants ont été validées ou traitées.',

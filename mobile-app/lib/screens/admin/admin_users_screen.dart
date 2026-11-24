@@ -128,7 +128,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Gestion des utilisateurs',
           eyebrow: 'ADMINISTRATION',
           subtitle:
@@ -239,7 +239,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
         // --- Liste des utilisateurs ---
         if (filteredUsers.isEmpty)
-          EmptyState(
+          const EmptyState(
             title: 'Aucun utilisateur trouvé',
             description: 'Modifiez vos filtres ou termes de recherche.',
             icon: Icons.person_search_outlined,

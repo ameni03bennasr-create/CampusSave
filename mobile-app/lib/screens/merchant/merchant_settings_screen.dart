@@ -57,7 +57,7 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Paramètres',
           subtitle: 'Gérez vos alertes, votre disponibilité et votre compte.',
         ),
@@ -71,12 +71,20 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
             children: [
               Text(
                 'Compte commerçant',
-                style: AppText.t10(weight: FontWeight.w800, color: AppColors.stone400),
+                style: AppText.t10(
+                  weight: FontWeight.w800,
+                  color: AppColors.stone400,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
-                profile.fullName.isEmpty ? establishment.name : profile.fullName,
-                style: AppText.base(weight: FontWeight.w800, color: AppColors.stone900),
+                profile.fullName.isEmpty
+                    ? establishment.name
+                    : profile.fullName,
+                style: AppText.base(
+                  weight: FontWeight.w800,
+                  color: AppColors.stone900,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
@@ -84,14 +92,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
                 style: AppText.xs(color: AppColors.stone500),
               ),
               const SizedBox(height: 10),
-              CsInfoRow(
-                label: 'Établissement',
-                value: establishment.name,
-              ),
+              CsInfoRow(label: 'Établissement', value: establishment.name),
               CsInfoRow(
                 label: 'Statut validation',
                 value: establishment.adminValidated ? 'Validé' : 'En attente',
-                valueColor: establishment.adminValidated ? AppColors.green : AppColors.orange,
+                valueColor: establishment.adminValidated
+                    ? AppColors.green
+                    : AppColors.orange,
               ),
             ],
           ),
@@ -106,7 +113,10 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
             children: [
               Text(
                 'Disponibilité en direct',
-                style: AppText.t10(weight: FontWeight.w800, color: AppColors.stone400),
+                style: AppText.t10(
+                  weight: FontWeight.w800,
+                  color: AppColors.stone400,
+                ),
               ),
               const SizedBox(height: 10),
               CsSwitchRow(
@@ -118,7 +128,9 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
                   setState(() => _isOpen = val);
                   CsToast.show(
                     context,
-                    val ? 'Commerce marqué comme ouvert.' : 'Commerce temporairement fermé.',
+                    val
+                        ? 'Commerce marqué comme ouvert.'
+                        : 'Commerce temporairement fermé.',
                   );
                 },
               ),
@@ -135,7 +147,10 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
             children: [
               Text(
                 'Préférences de notifications',
-                style: AppText.t10(weight: FontWeight.w800, color: AppColors.stone400),
+                style: AppText.t10(
+                  weight: FontWeight.w800,
+                  color: AppColors.stone400,
+                ),
               ),
               const SizedBox(height: 10),
               CsSwitchRow(

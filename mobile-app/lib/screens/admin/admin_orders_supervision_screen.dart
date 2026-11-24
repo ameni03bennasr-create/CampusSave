@@ -92,7 +92,7 @@ class _AdminOrdersSupervisionScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Supervision des commandes',
           eyebrow: 'FLUX DE TRANSACTIONS',
           subtitle:
@@ -181,7 +181,7 @@ class _AdminOrdersSupervisionScreenState
 
         // --- Liste des commandes ---
         if (filteredOrders.isEmpty)
-          EmptyState(
+          const EmptyState(
             title: 'Aucune commande trouvée',
             description: 'Aucune commande ne correspond aux filtres appliqués.',
             icon: Icons.receipt_long_outlined,

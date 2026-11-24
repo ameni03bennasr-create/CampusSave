@@ -49,6 +49,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   void _onPayPressed() {
     if (!_formKey.currentState!.validate()) return;
+
     if (!_acceptedTerms) {
       CsToast.show(context, 'Veuillez accepter les conditions de vente.');
       return;
@@ -82,7 +83,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
           PageHeader(
             title: 'Paiement sécurisé',
             eyebrow: 'ÉTAPE 3 SUR 3',
-            subtitle: 'Réglez votre commande pour activer votre QR Code de retrait.',
+            subtitle:
+                'Réglez votre commande pour activer votre QR Code de retrait.',
             onBack: () => AppRouter.back(context),
           ),
           const SizedBox(height: 16),
@@ -98,7 +100,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     children: [
                       Text(
                         order.productTitle,
-                        style: AppText.sm(weight: FontWeight.w800, color: AppColors.stone900),
+                        style: AppText.sm(
+                          weight: FontWeight.w800,
+                          color: AppColors.stone900,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -110,7 +115,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 Text(
                   Formatters.price(order.totalAmount),
-                  style: AppText.xl(weight: FontWeight.w900, color: AppColors.primary),
+                  style: AppText.xl(
+                    weight: FontWeight.w900,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),
@@ -125,21 +133,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
               children: [
                 Text(
                   'Mode de règlement',
-                  style: AppText.t10(weight: FontWeight.w800, color: AppColors.stone400),
+                  style: AppText.t10(
+                    weight: FontWeight.w800,
+                    color: AppColors.stone400,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _buildMethodTile(
-                  value: 'card',
-                  title: 'Carte bancaire (En ligne)',
-                  subtitle: 'Paiement sécurisé via passerelle bancaire',
-                  icon: Icons.credit_card,
-                ),
-                const Divider(height: 16),
-                _buildMethodTile(
-                  value: 'counter',
-                  title: 'Paiement sur place (Au comptoir)',
-                  subtitle: 'Règlement direct lors de la récupération',
-                  icon: Icons.storefront_outlined,
+                RadioGroup<String>(
+                  groupValue: _paymentMethod,
+                  onChanged: (String? val) {
+                    if (val != null) {
+                      setState(() => _paymentMethod = val);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      _buildMethodTile(
+                        value: 'card',
+                        title: 'Carte bancaire (En ligne)',
+                        subtitle: 'Paiement sécurisé via passerelle bancaire',
+                        icon: Icons.credit_card,
+                      ),
+                      const Divider(height: 16),
+                      _buildMethodTile(
+                        value: 'counter',
+                        title: 'Paiement sur place (Au comptoir)',
+                        subtitle: 'Règlement direct lors de la récupération',
+                        icon: Icons.storefront_outlined,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -155,7 +178,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   Text(
                     'Coordonnées bancaires',
-                    style: AppText.t10(weight: FontWeight.w800, color: AppColors.stone400),
+                    style: AppText.t10(
+                      weight: FontWeight.w800,
+                      color: AppColors.stone400,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   CsTextField(
@@ -250,7 +276,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         'J’accepte les conditions générales de vente et m’engage à récupérer le panier dans le créneau imparti.',
-                        style: AppText.xs(color: AppColors.stone700, height: 1.4),
+                        style: AppText.xs(
+                          color: AppColors.stone700,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ),
@@ -274,11 +303,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppColors.amberText, size: 20),
+                      const Icon(
+                        Icons.info_outline,
+                        color: AppColors.amberText,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Passerelle bancaire en cours d’intégration',
-                        style: AppText.xs(weight: FontWeight.w800, color: AppColors.amberText),
+                        style: AppText.xs(
+                          weight: FontWeight.w800,
+                          color: AppColors.amberText,
+                        ),
                       ),
                     ],
                   ),
@@ -308,7 +344,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
           // --- Bouton de validation ---
           CsButton(
-            label: 'Confirmer le règlement (${Formatters.price(order.totalAmount)})',
+            label:
+                'Confirmer le règlement (${Formatters.price(order.totalAmount)})',
             variant: CsButtonVariant.primary,
             size: CsButtonSize.large,
             expand: true,
@@ -352,20 +389,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       color: AppColors.stone900,
                     ),
                   ),
-                  Text(
-                    subtitle,
-                    style: AppText.t11(color: AppColors.stone500),
-                  ),
+                  Text(subtitle, style: AppText.t11(color: AppColors.stone500)),
                 ],
               ),
             ),
             Radio<String>(
               value: value,
-              groupValue: _paymentMethod,
-              activeColor: AppColors.primary,
-              onChanged: (val) {
-                if (val != null) setState(() => _paymentMethod = val);
-              },
+              fillColor: const WidgetStatePropertyAll(AppColors.primary),
             ),
           ],
         ),

@@ -50,12 +50,15 @@ class AdminStatisticsScreen extends StatelessWidget {
     );
 
     final averageOrder = paidOrders.isEmpty ? 0.0 : revenue / paidOrders.length;
-    final studentsCount =
-        users.where((user) => user.role == UserRole.student).length;
-    final activeMerchantsCount =
-        merchants.where((merchant) => merchant.accountActive).length;
-    final publishedOffersCount =
-        offers.where((offer) => offer.publicationStatus == 'Publiée').length;
+    final studentsCount = users
+        .where((user) => user.role == UserRole.student)
+        .length;
+    final activeMerchantsCount = merchants
+        .where((merchant) => merchant.accountActive)
+        .length;
+    final publishedOffersCount = offers
+        .where((offer) => offer.publicationStatus == 'Publiée')
+        .length;
     final totalQuantity = orders.fold<int>(
       0,
       (sum, order) => sum + order.quantity,
@@ -64,7 +67,7 @@ class AdminStatisticsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Statistiques globales',
           eyebrow: 'ANALYTIQUE PLATEFORME',
           subtitle: 'Indicateurs clés et métriques d’activité en temps réel.',
@@ -273,7 +276,10 @@ class AdminStatisticsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              CsInfoRow(label: 'Total référencés', value: '${merchants.length}'),
+              CsInfoRow(
+                label: 'Total référencés',
+                value: '${merchants.length}',
+              ),
               const Divider(height: 18),
               CsInfoRow(
                 label: 'Comptes actifs habilités',

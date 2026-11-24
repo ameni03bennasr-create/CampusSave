@@ -29,7 +29,12 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
   final _searchController = TextEditingController();
   String _selectedFilter = 'Toutes';
 
-  final List<String> _filters = const ['Toutes', 'À récupérer', 'Récupérées', 'En attente'];
+  final List<String> _filters = const [
+    'Toutes',
+    'À récupérer',
+    'Récupérées',
+    'En attente',
+  ];
 
   @override
   void dispose() {
@@ -41,7 +46,8 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
     final query = _searchController.text.trim().toLowerCase();
 
     return orders.where((order) {
-      final matchesSearch = query.isEmpty ||
+      final matchesSearch =
+          query.isEmpty ||
           order.studentName.toLowerCase().contains(query) ||
           order.productName.toLowerCase().contains(query) ||
           order.id.toLowerCase().contains(query);
@@ -49,7 +55,9 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
       final matchesFilter = switch (_selectedFilter) {
         'À récupérer' => order.orderStatus == 'Payée / À récupérer',
         'Récupérées' => order.orderStatus == 'Récupérée',
-        'En attente' => order.orderStatus == 'En attente' || order.orderStatus.contains('attente'),
+        'En attente' =>
+          order.orderStatus == 'En attente' ||
+              order.orderStatus.contains('attente'),
         _ => true,
       };
 
@@ -66,9 +74,10 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Commandes reçues',
-          subtitle: 'Suivez les réservations et validez les retraits de vos paniers.',
+          subtitle:
+              'Suivez les réservations et validez les retraits de vos paniers.',
         ),
         const SizedBox(height: 16),
 
@@ -89,7 +98,9 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
                 _FilterChip(
                   label: filter,
                   selected: _selectedFilter == filter,
-                  badge: filter == 'À récupérer' && workspace.pendingPickupCount > 0
+                  badge:
+                      filter == 'À récupérer' &&
+                          workspace.pendingPickupCount > 0
                       ? workspace.pendingPickupCount
                       : null,
                   onTap: () => setState(() => _selectedFilter = filter),
@@ -140,7 +151,10 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
             children: [
               Text(
                 order.id,
-                style: AppText.xs(weight: FontWeight.w800, color: AppColors.stone900),
+                style: AppText.xs(
+                  weight: FontWeight.w800,
+                  color: AppColors.stone900,
+                ),
               ),
               const Spacer(),
               MerchantOrderStatusBadge(status: order.orderStatus),
@@ -149,7 +163,10 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
           const SizedBox(height: 6),
           Text(
             order.studentName,
-            style: AppText.base(weight: FontWeight.w700, color: AppColors.stone900),
+            style: AppText.base(
+              weight: FontWeight.w700,
+              color: AppColors.stone900,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
@@ -163,10 +180,17 @@ class _MerchantOrdersScreenState extends State<MerchantOrdersScreen> {
               const Spacer(),
               Text(
                 Formatters.price(order.totalAmount),
-                style: AppText.sm(weight: FontWeight.w800, color: AppColors.primary),
+                style: AppText.sm(
+                  weight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(width: 6),
-              const Icon(Icons.chevron_right, size: 18, color: AppColors.stone400),
+              const Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.stone400,
+              ),
             ],
           ),
         ],

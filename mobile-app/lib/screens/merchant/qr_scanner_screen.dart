@@ -48,7 +48,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   void _validate() {
     final query = _codeController.text.trim();
     if (query.isEmpty) {
-      CsToast.show(context, 'Veuillez saisir un code de commande ou un jeton QR.');
+      CsToast.show(
+        context,
+        'Veuillez saisir un code de commande ou un jeton QR.',
+      );
       return;
     }
 
@@ -76,10 +79,11 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Validation QR Code',
           eyebrow: 'ESPACE RETRAIT',
-          subtitle: 'Vérifiez la validité de la commande avant de remettre le panier.',
+          subtitle:
+              'Vérifiez la validité de la commande avant de remettre le panier.',
         ),
         const SizedBox(height: 16),
 
@@ -107,14 +111,20 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     Positioned(
                       top: 20,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black54,
                           borderRadius: AppRadii.rFull,
                         ),
                         child: Text(
                           'Viseur Caméra Actif',
-                          style: AppText.t10(weight: FontWeight.w700, color: Colors.white70),
+                          style: AppText.t10(
+                            weight: FontWeight.w700,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     ),
@@ -161,7 +171,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             children: [
               Text(
                 'Ou saisie manuelle de référence',
-                style: AppText.t10(weight: FontWeight.w800, color: AppColors.stone400),
+                style: AppText.t10(
+                  weight: FontWeight.w800,
+                  color: AppColors.stone400,
+                ),
               ),
               const SizedBox(height: 10),
               Row(
@@ -204,10 +217,26 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   Widget _buildResultCard(BuildContext context, QrValidationResult result) {
     final (borderColor, iconColor, iconData) = switch (result.status) {
-      QrValidationStatus.success => (AppColors.green, AppColors.green, Icons.check_circle_outline),
-      QrValidationStatus.alreadyCollected => (AppColors.primary, AppColors.primary, Icons.history),
-      QrValidationStatus.unpaid => (AppColors.orange, AppColors.orange, Icons.warning_amber_rounded),
-      QrValidationStatus.invalid => (AppColors.red700, AppColors.red700, Icons.error_outline),
+      QrValidationStatus.success => (
+        AppColors.green,
+        AppColors.green,
+        Icons.check_circle_outline,
+      ),
+      QrValidationStatus.alreadyCollected => (
+        AppColors.primary,
+        AppColors.primary,
+        Icons.history,
+      ),
+      QrValidationStatus.unpaid => (
+        AppColors.orange,
+        AppColors.orange,
+        Icons.warning_amber_rounded,
+      ),
+      QrValidationStatus.invalid => (
+        AppColors.red700,
+        AppColors.red700,
+        Icons.error_outline,
+      ),
     };
 
     return CsCard(
@@ -223,7 +252,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               Expanded(
                 child: Text(
                   result.title,
-                  style: AppText.sm(weight: FontWeight.w800, color: AppColors.stone900),
+                  style: AppText.sm(
+                    weight: FontWeight.w800,
+                    color: AppColors.stone900,
+                  ),
                 ),
               ),
             ],
@@ -235,10 +267,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           ),
           if (result.order != null) ...[
             const Divider(height: 20),
-            CsInfoRow(
-              label: 'Client',
-              value: result.order!.studentName,
-            ),
+            CsInfoRow(label: 'Client', value: result.order!.studentName),
             CsInfoRow(
               label: 'Article',
               value: '${result.order!.quantity}x ${result.order!.productName}',
@@ -246,7 +275,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             CsInfoRow(
               label: 'Statut actuel',
               value: result.order!.orderStatus,
-              valueColor: result.order!.isCollected ? AppColors.green : AppColors.orange,
+              valueColor: result.order!.isCollected
+                  ? AppColors.green
+                  : AppColors.orange,
             ),
             const SizedBox(height: 12),
             Row(
@@ -294,10 +325,18 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       height: 22,
       decoration: BoxDecoration(
         border: Border(
-          top: isTop ? const BorderSide(color: AppColors.gold, width: 3) : BorderSide.none,
-          bottom: !isTop ? const BorderSide(color: AppColors.gold, width: 3) : BorderSide.none,
-          left: isLeft ? const BorderSide(color: AppColors.gold, width: 3) : BorderSide.none,
-          right: !isLeft ? const BorderSide(color: AppColors.gold, width: 3) : BorderSide.none,
+          top: isTop
+              ? const BorderSide(color: AppColors.gold, width: 3)
+              : BorderSide.none,
+          bottom: !isTop
+              ? const BorderSide(color: AppColors.gold, width: 3)
+              : BorderSide.none,
+          left: isLeft
+              ? const BorderSide(color: AppColors.gold, width: 3)
+              : BorderSide.none,
+          right: !isLeft
+              ? const BorderSide(color: AppColors.gold, width: 3)
+              : BorderSide.none,
         ),
       ),
     );

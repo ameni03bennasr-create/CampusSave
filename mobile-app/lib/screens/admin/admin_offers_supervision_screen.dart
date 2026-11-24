@@ -76,7 +76,7 @@ class _AdminOffersSupervisionScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeader(
+        const PageHeader(
           title: 'Supervision des offres',
           eyebrow: 'CATALOGUE & MODÉRATION',
           subtitle:
@@ -165,7 +165,7 @@ class _AdminOffersSupervisionScreenState
 
         // --- Liste des offres ---
         if (filteredOffers.isEmpty)
-          EmptyState(
+          const EmptyState(
             title: 'Aucune offre trouvée',
             description:
                 'Aucune offre ne correspond aux critères de recherche actuels.',
