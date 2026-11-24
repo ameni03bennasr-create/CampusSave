@@ -1,190 +1,106 @@
-import { useState } from 'react';
-import {
-  Edit3,
-  Save
-} from 'lucide-react';
-import { SafeImage } from '@/components/common/SafeImage';
+import { useState, useRef } from 'react';
+import { Button } from '@/components/Button';
+import { User, Camera, Save } from 'lucide-react';
 import type { StudentProfile } from '@/types/student';
-import type { FormEvent } from 'react';
 
-// ============================================================================
-// PAGE 12 – PROFIL ÉTUDIANT
-// ============================================================================
 interface StudentProfilePageProps {
   student: StudentProfile;
-  onUpdateStudent: (updated: StudentProfile) => void;
+  onUpdateStudent: (student: StudentProfile) => void;
 }
 
 export function StudentProfilePage({ student, onUpdateStudent }: StudentProfilePageProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({
-    fullName: student.fullName,
-    email: student.email,
-    phone: student.phone,
-    filiere: student.filiere,
-    etablissement: student.etablissement
-  });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState(student);
+  const [previousStudent, setPreviousStudent] = useState(student);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = (e: FormEvent) => {
-    e.preventDefault();
-    if (!form.fullName.trim() || !form.email.includes('@')) {
-      setError('Veuillez vérifier votre nom complet et votre adresse e-mail.');
-      return;
+  if (student !== previousStudent) {
+    setPreviousStudent(student);
+    setFormData(student);
+  }
+
+  const handleSave = () => {
+    onUpdateStudent(formData);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(current => ({ ...current, avatar: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
-    setError('');
-    onUpdateStudent({
-      ...student,
-      ...form
-    });
-    setIsEditing(false);
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900">Mon profil étudiant</h1>
-          <p className="text-sm text-stone-500 mt-1">
-            Gérez vos informations personnelles et vos coordonnées de contact CampusSave.
-          </p>
+          <h1 className="text-3xl font-extrabold text-stone-900">Mon profil étudiant</h1>
+          <p className="text-sm text-stone-500 mt-1">Gérez vos informations personnelles et vos coordonnées.</p>
         </div>
-
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-5 py-2.5 rounded-xl bg-[#A84F32] hover:bg-[#8E4128] text-white text-xs font-bold inline-flex items-center gap-2 shadow-xs"
-          >
-            <Edit3 className="w-4 h-4" />
-            Modifier le profil
-          </button>
-        )}
+        <Button onClick={handleSave} className="bg-[#A84F32] hover:bg-[#8E4128] text-white">
+          <Save className="w-4 h-4 mr-2" /> Enregistrer
+        </Button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-[#E9C98B]/70 shadow-sm overflow-hidden">
-        {/* Bandeau supérieur */}
-        <div className="h-28 bg-gradient-to-r from-[#A84F32] via-[#D98245] to-[#E9C98B]" />
+      <div className="bg-white rounded-3xl border border-[#E9C98B]/60 shadow-sm overflow-hidden">
+        {/* Bannière de fond */}
+        <div className="h-32 bg-gradient-to-r from-[#A84F32] to-[#D98245] relative">
+           <div className="absolute -bottom-12 left-8">
+             <div 
+               onClick={() => fileInputRef.current?.click()}
+               className="relative w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-md flex items-center justify-center text-stone-400 cursor-pointer group overflow-hidden"
+             >
+               {formData.avatar ? (
+                 <img src={formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+               ) : (
+                 <User className="w-10 h-10" />
+               )}
+               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                 <Camera className="w-6 h-6 text-white" />
+               </div>
+               <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+             </div>
+           </div>
+        </div>
 
-        <div className="px-6 sm:px-8 pb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 mb-6">
-            <div className="flex items-end gap-4">
-              <SafeImage
-                src={student.avatar}
-                alt={student.fullName}
-                className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-md bg-white"
-              />
-              <div className="pb-1">
-                <h2 className="text-xl font-extrabold text-stone-900">{student.fullName}</h2>
-                <p className="text-xs font-semibold text-[#4C6749]">
-                  Compte Étudiant Vérifié • {student.id}
-                </p>
-              </div>
-            </div>
-            <span className="text-xs text-stone-500">Membre depuis {student.memberSince}</span>
+        {/* Formulaire */}
+        <div className="pt-16 px-8 pb-8">
+          <div className="flex justify-between items-start mb-8">
+             <div>
+               <h2 className="text-xl font-bold text-stone-900">{formData.fullName || 'Étudiant'}</h2>
+               <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-[#4C6749]/10 text-[#4C6749] text-xs font-bold">Compte Étudiant Vérifié</span>
+             </div>
+             <div className="text-right text-xs text-stone-500">
+               <p>Membre depuis</p>
+               <p className="font-bold">{formData.memberSince || 'N/A'}</p>
+             </div>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSave} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-1.5">
-                  Nom complet
-                </label>
-                <input
-                  type="text"
-                  disabled={!isEditing}
-                  value={form.fullName}
-                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-900 disabled:bg-[#F8F1E7]/50 disabled:text-stone-700 focus:outline-none focus:border-[#A84F32]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-1.5">
-                  Adresse e-mail
-                </label>
-                <input
-                  type="email"
-                  disabled={!isEditing}
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-900 disabled:bg-[#F8F1E7]/50 disabled:text-stone-700 focus:outline-none focus:border-[#A84F32]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-1.5">
-                  Numéro de téléphone
-                </label>
-                <input
-                  type="tel"
-                  disabled={!isEditing}
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-900 disabled:bg-[#F8F1E7]/50 disabled:text-stone-700 focus:outline-none focus:border-[#A84F32]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-stone-500 mb-1.5">
-                  Établissement universitaire
-                </label>
-                <input
-                  type="text"
-                  disabled={!isEditing}
-                  value={form.etablissement}
-                  onChange={(e) => setForm({ ...form, etablissement: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-900 disabled:bg-[#F8F1E7]/50 disabled:text-stone-700 focus:outline-none focus:border-[#A84F32]"
-                />
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-stone-500 mb-1.5">
-                Filière & Niveau d’études
-              </label>
-              <input
-                type="text"
-                disabled={!isEditing}
-                value={form.filiere}
-                onChange={(e) => setForm({ ...form, filiere: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm font-semibold text-stone-900 disabled:bg-[#F8F1E7]/50 disabled:text-stone-700 focus:outline-none focus:border-[#A84F32]"
-              />
+              <label className="block text-sm font-bold text-stone-700 mb-1">Nom complet</label>
+              <input type="text" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} className="w-full px-4 py-3 border border-stone-300 rounded-xl outline-none focus:border-[#A84F32]" />
             </div>
-
-            {isEditing && (
-              <div className="pt-4 border-t border-stone-100 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setForm({
-                      fullName: student.fullName,
-                      email: student.email,
-                      phone: student.phone,
-                      filiere: student.filiere,
-                      etablissement: student.etablissement
-                    });
-                    setIsEditing(false);
-                  }}
-                  className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 text-xs font-bold hover:bg-stone-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-[#4C6749] hover:bg-[#3B5239] text-white text-xs font-bold inline-flex items-center gap-2 shadow-sm"
-                >
-                  <Save className="w-4 h-4" />
-                  Enregistrer les modifications
-                </button>
-              </div>
-            )}
-          </form>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-1">Adresse e-mail</label>
+              <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 border border-stone-300 rounded-xl outline-none focus:border-[#A84F32]" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-1">Numéro de téléphone</label>
+              <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-3 border border-stone-300 rounded-xl outline-none focus:border-[#A84F32]" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-1">Établissement universitaire</label>
+              <input type="text" value={formData.etablissement} onChange={e => setFormData({...formData, etablissement: e.target.value})} className="w-full px-4 py-3 border border-stone-300 rounded-xl outline-none focus:border-[#A84F32]" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-stone-700 mb-1">Filière & Niveau d'études</label>
+              <input type="text" value={formData.filiere} onChange={e => setFormData({...formData, filiere: e.target.value})} className="w-full px-4 py-3 border border-stone-300 rounded-xl outline-none focus:border-[#A84F32]" />
+            </div>
+          </div>
         </div>
       </div>
     </div>

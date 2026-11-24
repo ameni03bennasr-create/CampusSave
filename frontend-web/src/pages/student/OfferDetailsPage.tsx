@@ -12,7 +12,7 @@ interface OfferDetailsPageProps {
   quantity: number;
   setQuantity: Dispatch<SetStateAction<number>>;
   onNavigate: (page: "register" | "login" | "home" | "explore" | "offer-details" | "reservation" | "order-summary" | "payment" | "confirmation-qr" | "orders" | "order-details" | "profile" | "notifications" | "statistics" | "cart" | "checkout", options?: StudentNavigateOptions) => void;
-  onShowToast?: (message: string) => void; // <-- NOUVELLE PROP
+  onShowToast?: (message: string) => void;
 }
 
 export function OfferDetailsPage({ offer, restaurant, quantity, setQuantity, onNavigate, onShowToast }: OfferDetailsPageProps) {
@@ -29,12 +29,12 @@ export function OfferDetailsPage({ offer, restaurant, quantity, setQuantity, onN
       imageUrl: offer.image, 
       initialPrice: offer.initialPrice,
       discountedPrice: offer.reducedPrice,
-      quantity: offer.quantity, 
+      quantity: offer.quantity, // Le stock maximum
     };
     
-    addToCart(cartOffer, quantity);
+    // On passe 'quantity' (la quantité choisie via le bouton +/-) à la fonction
+    addToCart(cartOffer, quantity); 
     
-    // AFFICHAGE DU TOAST SI LA FONCTION EST PASSÉE
     if (onShowToast) {
       onShowToast(`${quantity} x ${offer.title} ajouté au panier !`);
     }

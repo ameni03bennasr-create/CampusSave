@@ -9,7 +9,7 @@ export type IncomingOffer = Omit<CartItem, 'maxQuantity'> & { quantity: number }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (offer: IncomingOffer, quantity: number) => void;
+  addToCart: (offer: IncomingOffer, quantityToAdd: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, newQuantity: number) => void;
   clearCart: () => void;
@@ -25,18 +25,11 @@ export const useCart = () => {
   return context;
 };
 
-// Play a short sound notification.
 const playPing = () => {
   try {
-    type WindowWithWebkitAudio = Window & {
-      webkitAudioContext?: typeof AudioContext;
-    };
-
-    const AudioContextClass = window.AudioContext
-      || (window as WindowWithWebkitAudio).webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    const ctx = new AudioContextClass();
+    const AudioContext = window.AudioContext || (window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -48,7 +41,7 @@ const playPing = () => {
     osc.start();
     osc.stop(ctx.currentTime + 0.2);
   } catch {
-    console.log('Audio is not supported');
+    return;
   }
 };
 
@@ -62,16 +55,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('campusSaveCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (offer: IncomingOffer, quantity: number) => {
-    playPing(); // <--- Joue le son
+  const addToCart = (offer: IncomingOffer, quantityToAdd: number) => {
+    playPing();
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === offer.id);
       if (existingItem) {
         return prevItems.map(item =>
-          item.id === offer.id ? { ...item, quantity: Math.min(item.quantity + quantity, item.maxQuantity) } : item
+          item.id === offer.id ? { ...item, quantity: Math.min(item.quantity + quantityToAdd, item.maxQuantity) } : item
         );
       }
-      return [...prevItems, { ...offer, maxQuantity: offer.quantity }];
+      // Correction ici : on sépare bien la quantité ajoutée et la quantité max
+      return [...prevItems, { 
+        id: offer.id, title: offer.title, category: offer.category, imageUrl: offer.imageUrl, 
+        initialPrice: offer.initialPrice, discountedPrice: offer.discountedPrice, 
+        quantity: quantityToAdd, // Quantité choisie (ex: 1)
+        maxQuantity: offer.quantity // Stock total (ex: 10)
+      }];
     });
   };
 

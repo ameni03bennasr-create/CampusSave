@@ -8,14 +8,22 @@ import type { Restaurant, StudentNotification, StudentOffer, StudentOrder, Stude
 import { localId } from '@/utils/ids';
 import type { ToastKind, ToastState } from '@/types/ui';
 
-const EMPTY_STUDENT: StudentProfile = {
-  id: '', fullName: '', email: '', phone: '', filiere: '', etablissement: '', avatar: '', ecoPoints: 340, memberSince: '',
+// On remplit le profil étudiant par défaut
+const INITIAL_STUDENT: StudentProfile = {
+  id: 's1', 
+  fullName: 'Yasmine Ben Ali', 
+  email: 'yasmine.benali@essect.tn', 
+  phone: '+216 55 123 456', 
+  filiere: '3ème année E-Business', 
+  etablissement: 'ESSECT Tunis', 
+  avatar: '', 
+  ecoPoints: 340, 
+  memberSince: 'Octobre 2026',
 };
 
-// --- DONNÉES FICTIVES COMPLÈTES ---
 const MOCK_RESTAURANTS: Restaurant[] = [
-  { id: 'r1', name: 'Cafétéria ESSECT', address: 'Bâtiment principal, ESSECT', distanceMeters: 50, type: 'Cafétéria', pickupHours: '12h - 15h', activeOffersCount: 2, rating: 4.5, reviewsCount: 0, phone: '', coords: { x: 60, y: 40 } },
-  { id: 'r2', name: 'Pâtisserie Le Délice', address: 'Rue de Montfleury, Tunis', distanceMeters: 200, type: 'Pâtisserie', pickupHours: '16h - 19h', activeOffersCount: 1, rating: 4.5, reviewsCount: 0, phone: '', coords: { x: 30, y: 60 } },
+  { id: 'r1', name: 'Cafétéria ESSECT', address: 'Bâtiment principal, ESSECT', distanceMeters: 50, type: 'Cafétéria', pickupHours: '12h - 15h', activeOffersCount: 2, rating: 4.5, reviewsCount: 120, phone: '+216 71 000 001', coords: { x: 60, y: 40 } },
+  { id: 'r2', name: 'Pâtisserie Le Délice', address: 'Rue de Montfleury, Tunis', distanceMeters: 200, type: 'Pâtisserie', pickupHours: '16h - 19h', activeOffersCount: 1, rating: 4.7, reviewsCount: 85, phone: '+216 71 000 002', coords: { x: 30, y: 60 } },
 ];
 
 const MOCK_OFFERS: StudentOffer[] = [
@@ -23,7 +31,6 @@ const MOCK_OFFERS: StudentOffer[] = [
   { id: 'o2', title: 'Assortiment de 3 Pâtisseries', description: 'Trois pâtisseries au choix parmi la sélection du jour.', initialPrice: 9.000, reducedPrice: 5.500, category: 'Pâtisseries', image: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=600&auto=format&fit=crop', quantity: 5, pickupHours: '16:00 - 18:00', restaurantId: 'r2', weightKg: 0.4, featured: true, isRecent: false, isSurpriseBasket: false },
   { id: 'o3', title: 'Panier Surprise', description: 'Un mélange d\'invendus salés et sucrés.', initialPrice: 15.000, reducedPrice: 6.000, category: 'Panier Surprise', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop', quantity: 3, pickupHours: '18:00 - 19:00', restaurantId: 'r1', weightKg: 0.8, featured: false, isRecent: true, isSurpriseBasket: true }
 ];
-// ------------------------------------
 
 export function useStudentWorkspace() {
   const navigate = useNavigate();
@@ -32,11 +39,16 @@ export function useStudentWorkspace() {
   const isAuthPage = STUDENT_AUTH_PAGES.includes(currentPage);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [student, setStudent] = useState<StudentProfile>(EMPTY_STUDENT);
+  const [student, setStudent] = useState<StudentProfile>(INITIAL_STUDENT);
   const [restaurants] = useState<Restaurant[]>(MOCK_RESTAURANTS);
   const [offers] = useState<StudentOffer[]>(MOCK_OFFERS);
   const [orders, setOrders] = useState<StudentOrder[]>([]);
-  const [notifications, setNotifications] = useState<StudentNotification[]>([]);
+  
+  // Notification de bienvenue par défaut
+  const [notifications, setNotifications] = useState<StudentNotification[]>([
+    { id: 'n1', type: 'reservation', title: 'Bienvenue sur CampusSave !', message: 'Merci de rejoindre la plateforme. Explorez les offres autour de vous et commencez à sauver des repas.', timestamp: 'À l’instant', read: false, orderId: '' }
+  ]);
+  
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [draftQuantity, setDraftQuantity] = useState(1);
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
