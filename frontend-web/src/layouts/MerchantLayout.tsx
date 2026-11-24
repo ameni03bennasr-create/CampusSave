@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { BarChart3, Bell, CheckCircle2, LayoutDashboard, LogOut, Menu, PlusCircle, QrCode, Settings, ShoppingBag, Store, UtensilsCrossed, X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import BrandLogo from '@/components/brand/BrandLogo';
 import { SafeImage } from '@/components/common/SafeImage';
 import type { ReactNode } from 'react';
@@ -11,8 +10,6 @@ export function MerchantLayout({ ws, children }: { ws: MerchantWorkspace; childr
   const { toast, navigateTo, establishment, showToast, unreadNotificationsCount, setMobileMenuOpen, mobileMenuOpen, currentPage, offers, pendingPickupCount } = ws;
   const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
-  // On utilise le localStorage pour sauvegarder le logo modifié
   const [merchantLogo, setMerchantLogo] = useState(() => localStorage.getItem('merchant_logo') || establishment.logo);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,25 +18,23 @@ export function MerchantLayout({ ws, children }: { ws: MerchantWorkspace; childr
       const reader = new FileReader();
       reader.onloadend = () => {
         setMerchantLogo(reader.result as string);
-        localStorage.setItem('merchant_logo', reader.result as string); // Persiste même si on rafraîchit
+        localStorage.setItem('merchant_logo', reader.result as string);
         showToast('Logo de l\'établissement mis à jour !');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  type MerchantPage = 'dashboard' | 'establishment' | 'offers' | 'add-offer' | 'edit-offer' | 'orders' | 'order-details' | 'qr-scanner' | 'statistics' | 'notifications' | 'settings';
-
-  const navItems: { id: MerchantPage; label: string; icon: LucideIcon; badge?: number | null }[] = [
-    { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-    { id: 'establishment', label: 'Mon établissement', icon: Store },
+  const navItems = [
+    { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard, badge: null },
+    { id: 'establishment', label: 'Mon établissement', icon: Store, badge: null },
     { id: 'offers', label: 'Mes offres', icon: UtensilsCrossed, badge: offers.length },
-    { id: 'add-offer', label: 'Ajouter une offre', icon: PlusCircle },
+    { id: 'add-offer', label: 'Ajouter une offre', icon: PlusCircle, badge: null },
     { id: 'orders', label: 'Commandes', icon: ShoppingBag, badge: pendingPickupCount > 0 ? pendingPickupCount : null },
-    { id: 'qr-scanner', label: 'Validation QR Code', icon: QrCode },
-    { id: 'statistics', label: 'Statistiques', icon: BarChart3 },
+    { id: 'qr-scanner', label: 'Validation QR Code', icon: QrCode, badge: null },
+    { id: 'statistics', label: 'Statistiques', icon: BarChart3, badge: null },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null },
-    { id: 'settings', label: 'Paramètres', icon: Settings }
+    { id: 'settings', label: 'Paramètres', icon: Settings, badge: null }
   ];
 
   const isNavActive = (itemId: string) => {
@@ -71,7 +66,6 @@ export function MerchantLayout({ ws, children }: { ws: MerchantWorkspace; childr
           </button>
         </div>
 
-        {/* Carte établissement avec Upload */}
         <div className={`px-4 pt-4 pb-2 ${isCollapsed ? 'flex justify-center px-2' : ''}`}>
           <div className={`p-3.5 rounded-2xl bg-[#F8F1E7]/85 border border-[#E9C98B]/60 space-y-2 ${isCollapsed ? 'flex justify-center' : ''}`}>
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
@@ -93,17 +87,31 @@ export function MerchantLayout({ ws, children }: { ws: MerchantWorkspace; childr
         </div>
 
         <nav className={`flex-1 py-3 space-y-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-4'}`}>
-          {navItems.map((item) => (
-            <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id)} className={`w-full flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all ${isNavActive(item.id) ? 'bg-[#A84F32] text-white shadow-xs' : 'text-stone-600 hover:bg-[#F8F1E7] hover:text-stone-900'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
-              <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <item.icon className={`w-4 h-4 ${isNavActive(item.id) ? 'text-white' : 'text-stone-500'}`} />
-                {!isCollapsed && <span>{item.label}</span>}
-              </span>
-              {!isCollapsed && item.badge !== undefined && item.badge !== null && (
-                <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${isNavActive(item.id) ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
-              )}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isNavActive(item.id);
+            return (
+              <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id as Parameters<typeof navigateTo>[0])} className={`w-full flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-[#A84F32] text-white' : 'text-stone-600 hover:bg-[#F8F1E7]'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
+                <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+                  
+                  <div className="relative">
+                    <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-stone-500'}`} />
+                    {isCollapsed && item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                      <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#A84F32] text-white text-[9px] font-bold flex items-center justify-center border border-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  {!isCollapsed && <span>{item.label}</span>}
+                </span>
+                
+                {!isCollapsed && item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${active ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className={`p-4 border-t border-[#F8F1E7] ${isCollapsed ? 'flex justify-center' : ''}`}>
@@ -117,11 +125,7 @@ export function MerchantLayout({ ws, children }: { ws: MerchantWorkspace; childr
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
          <header className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E9C98B]/60 px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigateTo('dashboard')} className="flex items-center gap-2.5"><BrandLogo className="h-11 w-auto" /><span className="text-[10px] font-bold text-[#D98245]">Commerçant</span></button>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2.5 rounded-xl bg-[#A84F32] text-white">
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2.5 rounded-xl bg-[#A84F32] text-white">{mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
         </header>
         <main className="flex-1 max-w-[1220px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 pb-24 lg:pb-12">{children}</main>
       </div>

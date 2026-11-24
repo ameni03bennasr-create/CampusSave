@@ -7,7 +7,7 @@ import type { StudentPageId } from '@/config/studentPages';
 import type { StudentWorkspace } from '@/hooks/useStudentWorkspace';
 import { Avatar } from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
-import { useCart } from '@/context/CartContext'; // <-- Import du panier
+import { useCart } from '@/context/CartContext';
 
 interface NavItem { id: StudentPageId; label: string; icon: LucideIcon; badge?: number | null; }
 interface StudentLayoutProps { ws: StudentWorkspace; children: ReactNode; }
@@ -15,7 +15,7 @@ interface StudentLayoutProps { ws: StudentWorkspace; children: ReactNode; }
 export function StudentLayout({ ws, children }: StudentLayoutProps) {
   const { toast, navigateTo, student, setStudent, showToast, unreadNotificationsCount, setMobileMenuOpen, mobileMenuOpen, currentPage, activeOrdersCount } = ws;
   const { logout } = useAuth();
-  const { getCartCount } = useCart(); // <-- Récupération du panier
+  const { getCartCount } = useCart();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   const cartCount = getCartCount();
@@ -23,7 +23,7 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
   const navItems: NavItem[] = [
     { id: 'home', label: 'Accueil', icon: Home },
     { id: 'explore', label: 'Explorer les offres', icon: Search },
-    { id: 'cart', label: 'Mon Panier', icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null }, // <-- Badge ajouté
+    { id: 'cart', label: 'Mon Panier', icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null },
     { id: 'orders', label: 'Mes commandes', icon: ShoppingBag, badge: activeOrdersCount > 0 ? activeOrdersCount : null },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null },
     { id: 'statistics', label: 'Statistiques', icon: BarChart3 },
@@ -72,7 +72,6 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
           </button>
         </div>
 
-        {/* Carte profil avec Upload d'image */}
         <div className={`px-4 pt-5 pb-2 ${isCollapsed ? 'flex justify-center px-2' : ''}`}>
           <div className={`p-3.5 rounded-2xl bg-[#F8F1E7]/80 border border-[#E9C98B]/50 flex items-center transition-colors ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="relative group cursor-pointer" onClick={() => document.getElementById('student-avatar-input')?.click()}>
@@ -99,9 +98,21 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
             return (
               <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id)} className={`w-full flex items-center py-3 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-[#A84F32] text-white shadow-sm' : 'text-stone-600 hover:bg-[#F8F1E7] hover:text-stone-900'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
                 <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                  <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-stone-500'}`} />
+                  
+                  {/* WRAPPER POUR L'ICONE ET LE BADGE COLLAPSED */}
+                  <div className="relative">
+                    <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-stone-500'}`} />
+                    {isCollapsed && item.badge && (
+                      <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#A84F32] text-white text-[9px] font-bold flex items-center justify-center border border-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+
                   {!isCollapsed && <span>{item.label}</span>}
                 </span>
+
+                {/* BADGE NORMAL (QUAND OUVERT) */}
                 {!isCollapsed && item.badge && (
                   <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${active ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
                 )}
@@ -118,7 +129,6 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
         </div>
       </aside>
 
-      {/* ... HEADER MOBILE et RESTE DU CODE ... */}
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
         <header className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E9C98B]/50 px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigateTo('home')}><BrandLogo className="h-11 w-auto" /></button>
@@ -132,13 +142,6 @@ export function StudentLayout({ ws, children }: StudentLayoutProps) {
             </button>
           </div>
         </header>
-
-        {/* ... LE RESTE EST IDENTIQUE ... */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-40 bg-stone-900/50 backdrop-blur-xs" onClick={() => setMobileMenuOpen(false)}>
-             {/* Contenu du menu mobile */}
-          </div>
-        )}
 
         <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 pb-24 lg:pb-12">{children}</main>
       </div>

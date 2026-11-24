@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { BarChart3, CheckCircle2, LayoutDashboard, LogOut, Menu, Settings, ShieldCheck, ShoppingBag, Store, Users, UtensilsCrossed, X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import BrandLogo from '@/components/brand/BrandLogo';
-import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { AdminPageId } from '@/config/adminPages';
 import type { AdminWorkspace } from '@/hooks/useAdminWorkspace';
 import { useAuth } from '@/context/AuthContext';
 
@@ -11,7 +9,6 @@ export function AdminLayout({ ws, children }: { ws: AdminWorkspace; children: Re
   const { toast, navigateTo, adminProfile, showToast, pendingMerchantsCount, setMobileMenuOpen, mobileMenuOpen, currentPage } = ws;
   const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
   const [adminAvatar, setAdminAvatar] = useState(() => localStorage.getItem('admin_avatar'));
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,15 +24,15 @@ export function AdminLayout({ ws, children }: { ws: AdminWorkspace; children: Re
     }
   };
 
-  const navItems: { id: AdminPageId; label: string; icon: LucideIcon; badge?: number | null }[] = [
-    { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-    { id: 'users', label: 'Gestion des utilisateurs', icon: Users },
-    { id: 'merchants', label: 'Gestion des commerçants', icon: Store },
+  const navItems = [
+    { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard, badge: null },
+    { id: 'users', label: 'Gestion des utilisateurs', icon: Users, badge: null },
+    { id: 'merchants', label: 'Gestion des commerçants', icon: Store, badge: null },
     { id: 'merchant-validation', label: 'Validation des commerçants', icon: ShieldCheck, badge: pendingMerchantsCount > 0 ? pendingMerchantsCount : null },
-    { id: 'offers-supervision', label: 'Supervision des offres', icon: UtensilsCrossed },
-    { id: 'orders-supervision', label: 'Supervision des commandes', icon: ShoppingBag },
-    { id: 'statistics', label: 'Statistiques', icon: BarChart3 },
-    { id: 'settings', label: 'Paramètres', icon: Settings }
+    { id: 'offers-supervision', label: 'Supervision des offres', icon: UtensilsCrossed, badge: null },
+    { id: 'orders-supervision', label: 'Supervision des commandes', icon: ShoppingBag, badge: null },
+    { id: 'statistics', label: 'Statistiques', icon: BarChart3, badge: null },
+    { id: 'settings', label: 'Paramètres', icon: Settings, badge: null }
   ];
 
   const isNavActive = (itemId: string) => {
@@ -68,16 +65,11 @@ export function AdminLayout({ ws, children }: { ws: AdminWorkspace; children: Re
           </button>
         </div>
 
-        {/* Carte Admin avec Upload */}
         <div className={`px-4 pt-4 pb-2 ${isCollapsed ? 'flex justify-center px-2' : ''}`}>
           <div className={`p-3.5 rounded-2xl bg-[#F8F1E7]/85 border border-[#E9C98B]/60 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="relative group cursor-pointer shrink-0" onClick={() => document.getElementById('admin-avatar-input')?.click()}>
               <div className="w-10 h-10 rounded-xl bg-[#A84F32] text-white flex items-center justify-center font-extrabold text-sm overflow-hidden">
-                {adminAvatar ? (
-                  <img src={adminAvatar} alt="Admin" className="w-full h-full object-cover" />
-                ) : (
-                  adminProfile.fullName.charAt(0) || 'A'
-                )}
+                {adminAvatar ? <img src={adminAvatar} alt="Admin" className="w-full h-full object-cover" /> : adminProfile.fullName.charAt(0) || 'A'}
               </div>
               <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera className="w-4 h-4 text-white" />
@@ -94,15 +86,31 @@ export function AdminLayout({ ws, children }: { ws: AdminWorkspace; children: Re
         </div>
 
         <nav className={`flex-1 py-3 space-y-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-4'}`}>
-          {navItems.map((item) => (
-            <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id)} className={`w-full flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all ${isNavActive(item.id) ? 'bg-[#A84F32] text-white' : 'text-stone-600 hover:bg-[#F8F1E7]'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
-              <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <item.icon className="w-4 h-4" />
-                {!isCollapsed && <span>{item.label}</span>}
-              </span>
-              {!isCollapsed && item.badge && <span className="px-2 py-0.5 text-xs rounded-full bg-[#D98245] text-white font-bold">{item.badge}</span>}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isNavActive(item.id);
+            return (
+              <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id as Parameters<typeof navigateTo>[0])} className={`w-full flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-[#A84F32] text-white' : 'text-stone-600 hover:bg-[#F8F1E7]'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
+                <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+                  
+                  <div className="relative">
+                    <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-stone-500'}`} />
+                    {isCollapsed && item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                      <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#A84F32] text-white text-[9px] font-bold flex items-center justify-center border border-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  {!isCollapsed && <span>{item.label}</span>}
+                </span>
+                
+                {!isCollapsed && item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${active ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className={`p-4 border-t border-[#F8F1E7] ${isCollapsed ? 'flex justify-center' : ''}`}>

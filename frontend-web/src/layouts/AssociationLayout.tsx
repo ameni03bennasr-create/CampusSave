@@ -17,7 +17,7 @@ export function AssociationLayout({ ws, children }: { ws: AssociationWorkspace, 
   const navItems = [
     { id: 'home', label: 'Accueil Club', icon: Home, badge: null },
     { id: 'explore', label: 'Explorer', icon: Search, badge: null },
-    { id: 'cart', label: 'Panier Groupé', icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null }, // <-- Badge
+    { id: 'cart', label: 'Panier Groupé', icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null },
     { id: 'orders', label: 'Demandes Groupées', icon: ShoppingBag, badge: null },
     { id: 'profile', label: 'Profil du Club', icon: User, badge: null },
   ] as const;
@@ -55,17 +55,31 @@ export function AssociationLayout({ ws, children }: { ws: AssociationWorkspace, 
         </div>
 
         <nav className={`flex-1 py-3 space-y-1 ${isCollapsed ? 'px-2' : 'px-4'}`}>
-          {navItems.map((item) => (
-            <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id)} className={`w-full flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all ${currentPage === item.id ? 'bg-[#A84F32] text-white' : 'text-stone-600 hover:bg-[#F8F1E7]'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
-              <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <item.icon className="w-4 h-4" />
-                {!isCollapsed && <span>{item.label}</span>}
-              </span>
-              {!isCollapsed && item.badge && (
-                <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${currentPage === item.id ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
-              )}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = currentPage === item.id;
+            return (
+              <button key={item.id} title={isCollapsed ? item.label : undefined} onClick={() => navigateTo(item.id)} className={`w-full flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-[#A84F32] text-white' : 'text-stone-600 hover:bg-[#F8F1E7]'} ${isCollapsed ? 'justify-center px-0' : 'justify-between px-3.5'}`}>
+                <span className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+                  
+                  <div className="relative">
+                    <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-stone-500'}`} />
+                    {isCollapsed && item.badge && (
+                      <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#A84F32] text-white text-[9px] font-bold flex items-center justify-center border border-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  {!isCollapsed && <span>{item.label}</span>}
+                </span>
+                
+                {!isCollapsed && item.badge && (
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${active ? 'bg-white text-[#A84F32]' : 'bg-[#D98245]/15 text-[#A84F32]'}`}>{item.badge}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className={`p-4 border-t border-[#F8F1E7] ${isCollapsed ? 'flex justify-center' : ''}`}>
