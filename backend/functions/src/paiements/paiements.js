@@ -11,28 +11,67 @@ const { confirmerPaiement, traiterEchecPaiement, signalerAnomalie } = require(".
 
 const KONNECT_KEY = defineSecret("KONNECT_API_KEY");
 const KONNECT_WALLET = defineSecret("KONNECT_WALLET_ID");
-// URL publique de konnectWebhook (à renseigner dans functions/.env, voir .env.example)
 const KONNECT_WEBHOOK_URL = defineString("KONNECT_WEBHOOK_URL", { default: "" });
+const KONNECT_VIRTUAL_PARAM = defineString("KONNECT_VIRTUAL", { default: "" });
 const KONNECT_API = "https://api.preprod.konnect.network/api/v2";
 
-// ---- Initier le paiement (étudiant / association) ----
-exports.initierPaiement = onCall({ secrets: [KONNECT_KEY, KONNECT_WALLET] },
+function isKonnectVirtual() {
+  const flag = (process.env.KONNECT_VIRTUAL || KONNECT_VIRTUAL_PARAM.value() || "").toLowerCase();
+  if (flag === "true" || flag === "1") return true;
+  if (flag === "false" || flag === "0") return false;
+  return process.env.FUNCTIONS_EMULATOR === "true" && !process.env.KONNECT_API_KEY;
+}
+
+function getLocalWebhookBaseUrl() {
+  const projectId = process.env.GCLOUD_PROJECT || "campussave-815dd";
+  return `http://127.0.0.1:5001/${projectId}/europe-west1/konnectWebhook`;
+}
+
+exports.initierPaiement = onCall(
+  { secrets: isKonnectVirtual() ? [] : [KONNECT_KEY, KONNECT_WALLET] },
   handle("initierPaiement", async (req) => {
     const acheteurId = requireRole(req, ...BUYER_ROLES);
-    const webhook = KONNECT_WEBHOOK_URL.value();
-    if (!webhook) throw new HttpsError("failed-precondition", "KONNECT_WEBHOOK_URL non configuré.");
 
     const cmdSnap = await db.doc(`commandes/${req.data?.commandeId}`).get();
     const cmd = cmdSnap.data();
-    if (!cmd || cmd.etudiantId !== acheteurId) throw new HttpsError("permission-denied", "Commande invalide");
-    if (cmd.statut !== STATUT_COMMANDE.EN_ATTENTE) throw new HttpsError("failed-precondition", "Commande déjà traitée");
+    if (!cmd || cmd.etudiantId !== acheteurId) {
+      throw new HttpsError("permission-denied", "Commande invalide");
+    }
+    if (cmd.statut !== STATUT_COMMANDE.EN_ATTENTE) {
+      throw new HttpsError("failed-precondition", "Commande déjà traitée");
+    }
+
+    if (isKonnectVirtual()) {
+      const paymentRef = `knct_virt_${Date.now()}_${cmdSnap.id}`;
+      await db.collection("paiements").doc(paymentRef).set({
+        commandeId: cmdSnap.id,
+        etudiantId: acheteurId,
+        montant: cmd.total,
+        modePaiement: "Konnect",
+        virtuel: true,
+        statutPaiement: STATUT_PAIEMENT.INITIE,
+        konnectRef: paymentRef,
+        datePaiement: FieldValue.serverTimestamp(),
+      });
+
+      const baseUrl = KONNECT_WEBHOOK_URL.value() || getLocalWebhookBaseUrl();
+      const sep = baseUrl.includes("?") ? "&" : "?";
+      return {
+        paymentRef,
+        virtual: true,
+        payUrl: `${baseUrl}${sep}payment_ref=${encodeURIComponent(paymentRef)}&virtualStatus=completed`,
+      };
+    }
+
+    const webhook = KONNECT_WEBHOOK_URL.value();
+    if (!webhook) throw new HttpsError("failed-precondition", "KONNECT_WEBHOOK_URL non configuré.");
 
     const res = await fetch(`${KONNECT_API}/payments/init-payment`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": KONNECT_KEY.value() },
       body: JSON.stringify({
         receiverWalletId: KONNECT_WALLET.value(),
-        amount: Math.round(cmd.total * 1000), // millimes
+        amount: Math.round(cmd.total * 1000),
         token: "TND",
         orderId: cmdSnap.id,
         webhook,
@@ -51,51 +90,78 @@ exports.initierPaiement = onCall({ secrets: [KONNECT_KEY, KONNECT_WALLET] },
       datePaiement: FieldValue.serverTimestamp(),
     });
     return { payUrl: data.payUrl };
-  }));
+  })
+);
 
-// ---- Webhook Konnect ----
-// On ne croit JAMAIS le corps de la requête : on reprend la référence, on
-// interroge Konnect, puis on contrôle commande ET montant avant de confirmer.
-exports.konnectWebhook = onRequest({ secrets: [KONNECT_KEY] }, async (req, res) => {
-  try {
-    const ref = typeof req.query.payment_ref === "string" ? req.query.payment_ref : "";
-    if (!ref) return void res.sendStatus(400);
+exports.konnectWebhook = onRequest(
+  { secrets: isKonnectVirtual() ? [] : [KONNECT_KEY] },
+  async (req, res) => {
+    try {
+      const ref = typeof req.query.payment_ref === "string" ? req.query.payment_ref : "";
+      if (!ref) return void res.sendStatus(400);
 
-    const paySnap = await db.doc(`paiements/${ref}`).get();
-    if (!paySnap.exists) return void res.sendStatus(404); // référence inconnue de nous
-    const pay = paySnap.data();
-    if (pay.modePaiement !== "Konnect") return void res.sendStatus(400);
+      const paySnap = await db.doc(`paiements/${ref}`).get();
+      if (!paySnap.exists) return void res.sendStatus(404);
+      const pay = paySnap.data();
+      if (pay.modePaiement !== "Konnect") return void res.sendStatus(400);
 
-    const r = await fetch(`${KONNECT_API}/payments/${encodeURIComponent(ref)}`, {
-      headers: { "x-api-key": KONNECT_KEY.value() },
-    });
-    if (!r.ok) throw new Error(`Konnect HTTP ${r.status}`); // 500 -> Konnect réessaiera
-    const { payment } = await r.json();
+      let payment;
+      if (isKonnectVirtual() || pay.virtuel === true) {
+        const vStatus = typeof req.query.virtualStatus === "string" ? req.query.virtualStatus : "completed";
+        if (vStatus === "anomaly_amount") {
+          payment = {
+            status: "completed",
+            amount: Math.round(pay.montant * 1000) + 500,
+            orderId: pay.commandeId,
+            token: "TND",
+          };
+        } else if (vStatus === "anomaly_order") {
+          payment = {
+            status: "completed",
+            amount: Math.round(pay.montant * 1000),
+            orderId: "COMMANDE_INCONNUE",
+            token: "TND",
+          };
+        } else {
+          payment = {
+            status: vStatus,
+            amount: Math.round(pay.montant * 1000),
+            orderId: pay.commandeId,
+            token: "TND",
+          };
+        }
+      } else {
+        const r = await fetch(`${KONNECT_API}/payments/${encodeURIComponent(ref)}`, {
+          headers: { "x-api-key": KONNECT_KEY.value() },
+        });
+        if (!r.ok) throw new Error(`Konnect HTTP ${r.status}`);
+        const body = await r.json();
+        payment = body.payment;
+      }
 
-    const verdict = verifierPaiementKonnect(pay, payment);
-    switch (verdict.etat) {
-      case "reussi":
-        await confirmerPaiement(ref);
-        break;
-      case "echec":
-        await traiterEchecPaiement(ref, verdict.raison); // restaure le stock
-        break;
-      case "anomalie":
-        console.error("ANOMALIE paiement", ref, JSON.stringify(verdict));
-        await signalerAnomalie(ref, verdict.raison); // pas de QR, vérification manuelle
-        break;
-      default: // "attente" : rien à faire
-        break;
+      const verdict = verifierPaiementKonnect(pay, payment);
+      switch (verdict.etat) {
+        case "reussi":
+          await confirmerPaiement(ref);
+          break;
+        case "echec":
+          await traiterEchecPaiement(ref, verdict.raison);
+          break;
+        case "anomalie":
+          console.error("ANOMALIE paiement", ref, JSON.stringify(verdict));
+          await signalerAnomalie(ref, verdict.raison);
+          break;
+        default:
+          break;
+      }
+      res.sendStatus(200);
+    } catch (err) {
+      console.error("ERREUR webhook :", err);
+      res.sendStatus(500);
     }
-    res.sendStatus(200);
-  } catch (err) {
-    console.error("ERREUR webhook :", err);
-    res.sendStatus(500);
   }
-});
+);
 
-// ---- SIMULATION LOCALE (émulateur uniquement ; à supprimer avant la production) ----
-// data : { commandeId, succes?: boolean }  (succes = true par défaut ; false simule un échec)
 exports.simulerPaiement = onCall(handle("simulerPaiement", async (req) => {
   if (process.env.FUNCTIONS_EMULATOR !== "true") {
     throw new HttpsError("permission-denied", "Disponible uniquement en local");
@@ -104,12 +170,18 @@ exports.simulerPaiement = onCall(handle("simulerPaiement", async (req) => {
 
   const cmdSnap = await db.doc(`commandes/${req.data?.commandeId}`).get();
   const cmd = cmdSnap.data();
-  if (!cmd || cmd.etudiantId !== acheteurId) throw new HttpsError("permission-denied", "Commande invalide");
+  if (!cmd || cmd.etudiantId !== acheteurId) {
+    throw new HttpsError("permission-denied", "Commande invalide");
+  }
 
   const payRef = db.collection("paiements").doc();
   await payRef.set({
-    commandeId: cmdSnap.id, etudiantId: acheteurId, montant: cmd.total,
-    modePaiement: "Simulation", statutPaiement: STATUT_PAIEMENT.INITIE, konnectRef: payRef.id,
+    commandeId: cmdSnap.id,
+    etudiantId: acheteurId,
+    montant: cmd.total,
+    modePaiement: "Simulation",
+    statutPaiement: STATUT_PAIEMENT.INITIE,
+    konnectRef: payRef.id,
     datePaiement: FieldValue.serverTimestamp(),
   });
   if (req.data?.succes === false) await traiterEchecPaiement(payRef.id, "simulation");
