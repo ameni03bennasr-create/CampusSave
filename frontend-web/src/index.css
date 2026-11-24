@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Foundation styles only. The Vite starter CSS (fixed 1126px #root, centered text,
+ * purple accent variables, dark-mode overrides) was removed because it conflicted
+ * with the CampusSave design. All visual styling comes from the Tailwind classes
+ * already present in the interface files.
+ */

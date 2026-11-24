@@ -1,0 +1,184 @@
+import {
+  ChevronLeft,
+  Clock,
+  MapPin,
+  Minus,
+  Plus,
+  Store
+} from 'lucide-react';
+import { SafeImage } from '@/components/common/SafeImage';
+import { formatPrice } from '@/utils/format';
+import type { StudentNavigateOptions } from '@/types/navigation';
+import type { Restaurant, StudentOffer, StudentProfile } from '@/types/student';
+import type { Dispatch, SetStateAction } from 'react';
+
+// ============================================================================
+// PAGE 06 – RÉSERVATION
+// ============================================================================
+interface ReservationPageProps {
+  offer: StudentOffer;
+  restaurant: Restaurant;
+  quantity: number;
+  setQuantity: Dispatch<SetStateAction<number>>;
+  student: StudentProfile;
+  onConfirmReservation: () => void;
+  onNavigate: (page: "register" | "login" | "home" | "explore" | "offer-details" | "reservation" | "order-summary" | "payment" | "confirmation-qr" | "orders" | "order-details" | "profile" | "notifications" | "statistics", options?: StudentNavigateOptions) => void;
+}
+
+export function ReservationPage({
+  offer,
+  restaurant,
+  quantity,
+  setQuantity,
+  student,
+  onConfirmReservation,
+  onNavigate
+}: ReservationPageProps) {
+  const totalAmount = offer.reducedPrice * quantity;
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <button
+        onClick={() => onNavigate('offer-details', { offerId: offer.id, quantity })}
+        className="inline-flex items-center gap-2 text-sm font-bold text-stone-600 hover:text-[#A84F32]"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Modifier la sélection
+      </button>
+
+      <div>
+        <span className="text-xs font-bold uppercase tracking-wider text-[#A84F32]">
+          Étape 1 sur 3 • Réservation
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">
+          Configurer votre réservation
+        </h1>
+        <p className="text-sm text-stone-500">
+          Vérifiez la quantité et le créneau de retrait avant de passer au récapitulatif.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 space-y-5">
+          {/* Produit sélectionné */}
+          <div className="bg-white rounded-2xl p-5 border border-[#E9C98B]/60 flex items-center gap-4">
+            <SafeImage
+              src={offer.image}
+              alt={offer.title}
+              className="w-24 h-24 rounded-xl object-cover shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-bold text-[#D98245]">{restaurant.name}</span>
+              <h2 className="font-extrabold text-stone-900 text-base leading-snug mt-0.5">
+                {offer.title}
+              </h2>
+              <p className="text-xs text-stone-500 mt-1">
+                Prix unitaire réduit :{' '}
+                <strong className="text-[#4C6749]">{formatPrice(offer.reducedPrice)}</strong>{' '}
+                <span className="line-through text-stone-400">
+                  ({formatPrice(offer.initialPrice)})
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Ajustement de quantité */}
+          <div className="bg-white rounded-2xl p-5 border border-[#E9C98B]/60 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-stone-900 text-sm">Quantité réservée</h3>
+              <p className="text-xs text-stone-500">
+                Stock disponible chez le commerçant : {offer.quantity}
+              </p>
+            </div>
+            <div className="inline-flex items-center rounded-xl border border-stone-200 bg-[#F8F1E7] p-1">
+              <button
+                type="button"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                disabled={quantity <= 1}
+                className="w-9 h-9 rounded-lg bg-white text-stone-800 flex items-center justify-center disabled:opacity-40"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="w-11 text-center font-extrabold text-base">{quantity}</span>
+              <button
+                type="button"
+                onClick={() => setQuantity(Math.min(offer.quantity, quantity + 1))}
+                disabled={quantity >= offer.quantity}
+                className="w-9 h-9 rounded-lg bg-white text-stone-800 flex items-center justify-center disabled:opacity-40"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Informations Restaurant & Créneau de retrait */}
+          <div className="bg-white rounded-2xl p-5 border border-[#E9C98B]/60 space-y-3">
+            <h3 className="font-bold text-stone-900 text-sm">
+              Informations de récupération sur place
+            </h3>
+            <div className="p-3.5 rounded-xl bg-[#F8F1E7] space-y-2 text-xs text-stone-700">
+              <p className="flex items-center gap-2 font-semibold">
+                <Store className="w-4 h-4 text-[#A84F32]" />
+                {restaurant.name}
+              </p>
+              <p className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-stone-500" />
+                {restaurant.address}
+              </p>
+              <p className="flex items-center gap-2 font-bold text-[#4C6749]">
+                <Clock className="w-4 h-4" />
+                Créneau obligatoire aujourd’hui : {offer.pickupHours}
+              </p>
+            </div>
+            <p className="text-xs text-stone-500">
+              Réservation au nom de : <strong className="text-stone-800">{student.fullName}</strong> ({student.phone})
+            </p>
+          </div>
+        </div>
+
+        {/* Encart Résumé de réservation */}
+        <div className="lg:col-span-5">
+          <div className="bg-white rounded-2xl p-6 border border-[#E9C98B] shadow-sm sticky top-24 space-y-4">
+            <h3 className="font-extrabold text-stone-900 text-lg">
+              Résumé de réservation
+            </h3>
+            <div className="space-y-2.5 text-sm border-y border-stone-100 py-4">
+              <div className="flex justify-between text-stone-600">
+                <span>Prix unitaire réduit</span>
+                <span className="font-semibold">{formatPrice(offer.reducedPrice)}</span>
+              </div>
+              <div className="flex justify-between text-stone-600">
+                <span>Quantité</span>
+                <span className="font-semibold">× {quantity}</span>
+              </div>
+              <div className="flex justify-between text-[#4C6749] text-xs font-bold">
+                <span>Économie réalisée</span>
+                <span>
+                  -{formatPrice((offer.initialPrice - offer.reducedPrice) * quantity)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-baseline justify-between">
+              <span className="font-bold text-stone-800">Montant total</span>
+              <span className="text-2xl font-extrabold text-[#A84F32]">
+                {formatPrice(totalAmount)}
+              </span>
+            </div>
+
+            <button
+              onClick={onConfirmReservation}
+              className="w-full py-3.5 px-5 rounded-xl bg-[#A84F32] hover:bg-[#8E4128] text-white font-bold text-sm shadow-md transition-all"
+            >
+              Confirmer la réservation
+            </button>
+
+            <p className="text-[11px] text-stone-400 text-center leading-relaxed">
+              Le QR Code de retrait sera généré immédiatement après la confirmation du paiement électronique.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
