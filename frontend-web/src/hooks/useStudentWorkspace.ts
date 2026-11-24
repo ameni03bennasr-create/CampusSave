@@ -8,22 +8,22 @@ import type { Restaurant, StudentNotification, StudentOffer, StudentOrder, Stude
 import { localId } from '@/utils/ids';
 import type { ToastKind, ToastState } from '@/types/ui';
 
-// On remplit le profil étudiant par défaut
+interface CartCheckoutItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  quantity: number;
+  initialPrice: number;
+  discountedPrice: number;
+}
+
 const INITIAL_STUDENT: StudentProfile = {
-  id: 's1', 
-  fullName: 'Yasmine Ben Ali', 
-  email: 'yasmine.benali@essect.tn', 
-  phone: '+216 55 123 456', 
-  filiere: '3ème année E-Business', 
-  etablissement: 'ESSECT Tunis', 
-  avatar: '', 
-  ecoPoints: 340, 
-  memberSince: 'Octobre 2026',
+  id: 's1', fullName: 'Yasmine Ben Ali', email: 'yasmine.benali@essect.tn', phone: '+216 55 123 456', filiere: '3ème année E-Business', etablissement: 'ESSECT Tunis', avatar: '', ecoPoints: 340, memberSince: 'Octobre 2026',
 };
 
 const MOCK_RESTAURANTS: Restaurant[] = [
-  { id: 'r1', name: 'Cafétéria ESSECT', address: 'Bâtiment principal, ESSECT', distanceMeters: 50, type: 'Cafétéria', pickupHours: '12h - 15h', activeOffersCount: 2, rating: 4.5, reviewsCount: 120, phone: '+216 71 000 001', coords: { x: 60, y: 40 } },
-  { id: 'r2', name: 'Pâtisserie Le Délice', address: 'Rue de Montfleury, Tunis', distanceMeters: 200, type: 'Pâtisserie', pickupHours: '16h - 19h', activeOffersCount: 1, rating: 4.7, reviewsCount: 85, phone: '+216 71 000 002', coords: { x: 30, y: 60 } },
+  { id: 'r1', name: 'Cafétéria ESSECT', address: 'Bâtiment principal, ESSECT', distanceMeters: 50, type: 'Cafétéria', pickupHours: '12h - 15h', activeOffersCount: 2, rating: 4.5, reviewsCount: 24, phone: '+216 71 000 001', coords: { x: 60, y: 40 } },
+  { id: 'r2', name: 'Pâtisserie Le Délice', address: 'Rue de Montfleury, Tunis', distanceMeters: 200, type: 'Pâtisserie', pickupHours: '16h - 19h', activeOffersCount: 1, rating: 4.7, reviewsCount: 18, phone: '+216 71 000 002', coords: { x: 30, y: 60 } },
 ];
 
 const MOCK_OFFERS: StudentOffer[] = [
@@ -43,12 +43,10 @@ export function useStudentWorkspace() {
   const [restaurants] = useState<Restaurant[]>(MOCK_RESTAURANTS);
   const [offers] = useState<StudentOffer[]>(MOCK_OFFERS);
   const [orders, setOrders] = useState<StudentOrder[]>([]);
-  
-  // Notification de bienvenue par défaut
   const [notifications, setNotifications] = useState<StudentNotification[]>([
-    { id: 'n1', type: 'reservation', title: 'Bienvenue sur CampusSave !', message: 'Merci de rejoindre la plateforme. Explorez les offres autour de vous et commencez à sauver des repas.', timestamp: 'À l’instant', read: false, orderId: '' }
+    { id: 'n1', type: 'reservation', title: 'Bienvenue sur CampusSave !', message: 'Merci de rejoindre la plateforme. Explorez les offres autour de vous.', timestamp: 'À l’instant', read: false, orderId: '' }
   ]);
-  
+
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [draftQuantity, setDraftQuantity] = useState(1);
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
@@ -62,12 +60,12 @@ export function useStudentWorkspace() {
     setTimeout(() => { setToast(null); }, 3800);
   };
 
-  const selectedOffer = useMemo(() => offers.find((o) => o.id === selectedOfferId), [offers, selectedOfferId]);
-  const activeOrder = useMemo(() => orders.find((ord) => ord.id === activeOrderId), [orders, activeOrderId]);
-  const getRestaurant = (restId: string) => restaurants.find((r) => r.id === restId);
+  const selectedOffer = useMemo(() => offers.find((offer) => offer.id === selectedOfferId), [offers, selectedOfferId]);
+  const activeOrder = useMemo(() => orders.find((order) => order.id === activeOrderId), [orders, activeOrderId]);
+  const getRestaurant = (restId: string) => restaurants.find((restaurant) => restaurant.id === restId);
 
-  const unreadNotificationsCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
-  const activeOrdersCount = useMemo(() => orders.filter((o) => o.orderStatus.includes('Confirmée') || o.orderStatus.includes('attente')).length, [orders]);
+  const unreadNotificationsCount = useMemo(() => notifications.filter((notification) => !notification.read).length, [notifications]);
+  const activeOrdersCount = useMemo(() => orders.filter((order) => order.orderStatus.includes('Confirmée') || order.orderStatus.includes('attente')).length, [orders]);
 
   const navigateTo = (page: StudentPageId, options: StudentNavigateOptions = {}) => {
     if (options.offerId) { setSelectedOfferId(options.offerId); setDraftQuantity(options.quantity || 1); }
@@ -80,22 +78,69 @@ export function useStudentWorkspace() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleCartCheckout = (cartItems: CartCheckoutItem[], total: number) => {
+    void total;
+    const newOrders: StudentOrder[] = cartItems.map((item) => {
+      const offer = offers.find((candidate) => candidate.id === item.id);
+      const restaurant = getRestaurant(offer?.restaurantId || 'r1');
+      return {
+        id: localId('CMD'),
+        offerId: item.id,
+        productTitle: item.title,
+        productImage: item.imageUrl,
+        restaurantId: offer?.restaurantId || 'r1',
+        restaurantName: restaurant?.name || 'Commerçant',
+        restaurantAddress: restaurant?.address || '',
+        quantity: item.quantity,
+        initialUnitPrice: item.initialPrice,
+        unitPrice: item.discountedPrice,
+        totalAmount: Number((item.discountedPrice * item.quantity).toFixed(2)),
+        pickupHours: offer?.pickupHours || '12:00 - 14:00',
+        createdAt: 'À l’instant',
+        paymentStatus: 'Payée',
+        orderStatus: 'Confirmée',
+        paymentMethod: 'En ligne',
+        qrToken: `QR-${Date.now()}-${item.id}`,
+        weightKg: Number(((offer?.weightKg || 0.3) * item.quantity).toFixed(2))
+      };
+    });
+
+    setOrders((previous) => [...newOrders, ...previous]);
+
+    setNotifications((previous) => [
+      { id: `notif-${Date.now()}`, type: 'payment', title: 'Paiement confirmé', message: `Vos ${newOrders.length} commandes ont été payées avec succès. Retrouvez vos QR codes dans "Mes commandes".`, timestamp: 'À l’instant', read: false, orderId: newOrders[0]?.id || '' },
+      ...previous
+    ]);
+  };
+
   const handleCreatePendingOrder = (offer: StudentOffer, qty: number) => {
-    const rest = getRestaurant(offer.restaurantId);
+    const restaurant = getRestaurant(offer.restaurantId);
     const newId = localId('CMD');
-    const newOrder = {
-      id: newId, offerId: offer.id, productTitle: offer.title, productImage: offer.image,
-      restaurantId: offer.restaurantId, restaurantName: rest?.name ?? '', restaurantAddress: rest?.address ?? '',
-      quantity: qty, initialUnitPrice: offer.initialPrice, unitPrice: offer.reducedPrice,
-      totalAmount: Number((offer.reducedPrice * qty).toFixed(2)), pickupHours: offer.pickupHours,
-      createdAt: 'À l’instant', paymentStatus: 'En attente', orderStatus: 'En attente de paiement',
-      paymentMethod: 'En cours de sélection', qrToken: null, weightKg: Number(((offer.weightKg ?? 0) * qty).toFixed(2))
+    const newOrder: StudentOrder = {
+      id: newId,
+      offerId: offer.id,
+      productTitle: offer.title,
+      productImage: offer.image,
+      restaurantId: offer.restaurantId,
+      restaurantName: restaurant?.name ?? '',
+      restaurantAddress: restaurant?.address ?? '',
+      quantity: qty,
+      initialUnitPrice: offer.initialPrice,
+      unitPrice: offer.reducedPrice,
+      totalAmount: Number((offer.reducedPrice * qty).toFixed(2)),
+      pickupHours: offer.pickupHours,
+      createdAt: 'À l’instant',
+      paymentStatus: 'En attente',
+      orderStatus: 'En attente de paiement',
+      paymentMethod: 'En cours de sélection',
+      qrToken: null,
+      weightKg: Number(((offer.weightKg ?? 0) * qty).toFixed(2))
     };
-    setOrders((prev) => [newOrder, ...prev]);
+    setOrders((previous) => [newOrder, ...previous]);
     setActiveOrderId(newId);
-    setNotifications((prev) => [
-      { id: `notif-${Date.now()}`, type: 'reservation', title: `Réservation créée (${newId})`, message: `Vous avez réservé ${qty}x « ${offer.title} » chez ${rest?.name ?? 'le commerçant'}. Finalisez le paiement pour générer votre QR Code.`, timestamp: 'À l’instant', read: false, orderId: newId },
-      ...prev
+    setNotifications((previous) => [
+      { id: `notif-${Date.now()}`, type: 'reservation', title: `Réservation créée (${newId})`, message: `Vous avez réservé ${qty}x « ${offer.title} ». Finalisez le paiement.`, timestamp: 'À l’instant', read: false, orderId: newId },
+      ...previous
     ]);
     navigateTo('order-summary', { orderId: newId });
   };
@@ -105,7 +150,8 @@ export function useStudentWorkspace() {
     student, setStudent, restaurants, offers, orders, notifications, setNotifications,
     draftQuantity, setDraftQuantity, exploreSearchProduct, exploreSearchRestaurant, exploreCategory,
     toast, showToast, selectedOffer, activeOrder, getRestaurant,
-    unreadNotificationsCount, activeOrdersCount, navigateTo, handleCreatePendingOrder
+    unreadNotificationsCount, activeOrdersCount, navigateTo, handleCreatePendingOrder,
+    handleCartCheckout
   };
 }
 export type StudentWorkspace = ReturnType<typeof useStudentWorkspace>;

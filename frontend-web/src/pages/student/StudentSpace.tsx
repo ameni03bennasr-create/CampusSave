@@ -35,7 +35,7 @@ export default function StudentSpace() {
     currentPage, isAuthPage, isKnownPage, setStudent, showToast, navigateTo, student,
     restaurants, offers, orders, exploreSearchProduct, exploreSearchRestaurant,
     exploreCategory, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity,
-    handleCreatePendingOrder, activeOrder, notifications, setNotifications
+    handleCreatePendingOrder, activeOrder, notifications, setNotifications, handleCartCheckout
   } = ws;
 
   useDocumentTitle(ALL_14_PAGES.find((p) => p.id === currentPage)?.label ?? '');
@@ -64,30 +64,21 @@ export default function StudentSpace() {
     <StudentLayout ws={ws}>
       {currentPage === 'home' && <StudentHomePage student={student} offers={offers} restaurants={restaurants} orders={orders} onNavigate={navigateTo} />}
       {currentPage === 'cart' && <CartPage onNavigate={navigateTo} />}
-      {currentPage === 'checkout' && <CheckoutPage onNavigate={navigateTo} />}
-      {currentPage === 'explore' && <ExploreOffersPage offers={offers} restaurants={restaurants} initialSearchProduct={exploreSearchProduct} initialSearchRestaurant={exploreSearchRestaurant} initialCategory={exploreCategory} onNavigate={navigateTo} />}
       
-      {/* Ajout de onShowToast ici */}
-      {currentPage === 'offer-details' && (selectedOffer && selectedRestaurant ? (
-        <OfferDetailsPage 
-          offer={selectedOffer} 
-          restaurant={selectedRestaurant} 
-          quantity={draftQuantity} 
-          setQuantity={setDraftQuantity} 
-          onNavigate={navigateTo} 
-          onShowToast={showToast} 
-        />
-      ) : noOffer)}
-
+      {/* ON PASSE LA FONCTION ICI */}
+      {currentPage === 'checkout' && <CheckoutPage onNavigate={(page) => navigateTo(page as Parameters<typeof navigateTo>[0])} onCheckoutSuccess={handleCartCheckout} />}
+      
+      {currentPage === 'explore' && <ExploreOffersPage offers={offers} restaurants={restaurants} initialSearchProduct={exploreSearchProduct} initialSearchRestaurant={exploreSearchRestaurant} initialCategory={exploreCategory} onNavigate={navigateTo} />}
+      {currentPage === 'offer-details' && (selectedOffer && selectedRestaurant ? <OfferDetailsPage offer={selectedOffer} restaurant={selectedRestaurant} quantity={draftQuantity} setQuantity={setDraftQuantity} onNavigate={navigateTo} onShowToast={showToast} /> : noOffer)}
       {currentPage === 'reservation' && (selectedOffer && selectedRestaurant ? <ReservationPage offer={selectedOffer} restaurant={selectedRestaurant} quantity={draftQuantity} setQuantity={setDraftQuantity} student={student} onConfirmReservation={() => handleCreatePendingOrder(selectedOffer, draftQuantity)} onNavigate={navigateTo} /> : noOffer)}
       {currentPage === 'order-summary' && (activeOrder && activeRestaurant ? <OrderSummaryPage order={activeOrder} restaurant={activeRestaurant} student={student} onNavigate={navigateTo} /> : noOrder)}
       {currentPage === 'payment' && (activeOrder ? <ElectronicPaymentPage order={activeOrder} onPay={async (method) => { const { paymentUrl } = await paymentService.startPayment(activeOrder.id, method); window.location.assign(paymentUrl); }} onNavigate={navigateTo} /> : <EmptyState icon={CreditCard} title="Aucun paiement en attente" description="Réservez une offre pour pouvoir la régler en ligne." action={{ label: 'Explorer les offres', onClick: () => navigateTo('explore') }} />)}
-      {currentPage === 'confirmation-qr' && (activeOrder && activeRestaurant ? <ReservationConfirmationQRPage order={activeOrder} restaurant={activeRestaurant} onNavigate={navigateTo} /> : <EmptyState icon={QrCode} title="Aucun QR Code à afficher" description="Votre QR Code de retrait apparaît ici une fois le paiement d’une réservation confirmé." action={{ label: 'Voir mes commandes', onClick: () => navigateTo('orders') }} />)}
+      {currentPage === 'confirmation-qr' && (activeOrder && activeRestaurant ? <ReservationConfirmationQRPage order={activeOrder} restaurant={activeRestaurant} onNavigate={navigateTo} /> : <EmptyState icon={QrCode} title="Aucun QR Code à afficher" description="Votre QR Code de retrait apparaît ici une fois le paiement confirmé." action={{ label: 'Voir mes commandes', onClick: () => navigateTo('orders') }} />)}
       {currentPage === 'orders' && <MyOrdersPage orders={orders} onNavigate={navigateTo} />}
       {currentPage === 'order-details' && (activeOrder && activeRestaurant ? <OrderDetailsPage order={activeOrder} restaurant={activeRestaurant} onNavigate={navigateTo} /> : noOrder)}
-      {currentPage === 'profile' && <StudentProfilePage student={student} onUpdateStudent={(updated) => { setStudent(updated); showToast('Vos informations personnelles ont été mises à jour.'); }} />}
-      {currentPage === 'notifications' && <NotificationsPage notifications={notifications} onMarkAllRead={() => { setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))); showToast('Toutes les notifications ont été marquées comme lues.'); }} onToggleRead={(id) => { setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))); }} onOpenOrder={(orderId) => navigateTo('order-details', { orderId })} />}
-      {currentPage === 'statistics' && <StudentStatisticsPage student={student} orders={orders} offers={offers} restaurants={restaurants} onNavigate={(page, options) => navigateTo(page as typeof currentPage, options)} />}
+      {currentPage === 'profile' && <StudentProfilePage student={student} onUpdateStudent={(updated) => { setStudent(updated); showToast('Profil mis à jour.'); }} />}
+      {currentPage === 'notifications' && <NotificationsPage notifications={notifications} onMarkAllRead={() => { setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))); showToast('Notifications lues.'); }} onToggleRead={(id) => { setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))); }} onOpenOrder={(orderId) => navigateTo('order-details', { orderId })} />}
+      {currentPage === 'statistics' && <StudentStatisticsPage student={student} orders={orders} offers={offers} restaurants={restaurants} onNavigate={(page) => navigateTo(page as Parameters<typeof navigateTo>[0])} />}
     </StudentLayout>
   );
 

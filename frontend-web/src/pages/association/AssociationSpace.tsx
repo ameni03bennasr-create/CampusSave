@@ -17,7 +17,7 @@ import type { ComponentProps } from 'react';
 
 export default function AssociationSpace() {
   const ws = useAssociationWorkspace();
-  const { currentPage, navigateTo, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity, showToast } = ws;
+  const { currentPage, navigateTo, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity, showToast, handleCartCheckout } = ws;
 
   if (currentPage === 'login' || currentPage === 'register') {
     return (
@@ -45,14 +45,17 @@ export default function AssociationSpace() {
           quantity={draftQuantity} 
           setQuantity={setDraftQuantity} 
           onNavigate={navigateTo as ComponentProps<typeof OfferDetailsPage>['onNavigate']} 
-          onShowToast={showToast} // <-- Ajouté ici
+          onShowToast={showToast}
         />
       ) : (
         <EmptyState icon={Tag} title="Aucune offre sélectionnée" description="Retournez au catalogue." />
       ))}
 
       {currentPage === 'cart' && <CartPage onNavigate={navigateTo as ComponentProps<typeof CartPage>['onNavigate']} />}
-      {currentPage === 'checkout' && <CheckoutPage onNavigate={navigateTo as ComponentProps<typeof CheckoutPage>['onNavigate']} />}
+      
+      {/* ON PASSE LA FONCTION ICI AUSSI */}
+      {currentPage === 'checkout' && <CheckoutPage onNavigate={navigateTo as ComponentProps<typeof CheckoutPage>['onNavigate']} onCheckoutSuccess={handleCartCheckout} />}
+      
       {currentPage === 'orders' && <AssociationOrdersPage />}
       {currentPage === 'profile' && <AssociationProfilePage ws={ws} />}
     </AssociationLayout>

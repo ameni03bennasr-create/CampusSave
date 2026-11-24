@@ -5,13 +5,23 @@ import { resolveSpacePage } from '@/routes/spaceRouting';
 import type { AssociationPageId } from '@/config/associationPages';
 import type { ToastKind, ToastState } from '@/types/ui';
 import type { StudentNavigateOptions } from '@/types/navigation';
+import { localId } from '@/utils/ids';
 
-interface Restaurant {
-  id: string; name: string; address: string; distanceMeters: number; type: string; pickupHours: string; activeOffersCount: number; coords: { x: number; y: number };
-}
-
-interface Offer {
-  id: string; title: string; description: string; initialPrice: number; reducedPrice: number; category: string; image: string; quantity: number; pickupHours: string; restaurantId: string; weightKg: number; featured: boolean; isRecent: boolean; isSurpriseBasket: boolean;
+interface Restaurant { id: string; name: string; address: string; distanceMeters: number; type: string; pickupHours: string; activeOffersCount: number; coords: { x: number; y: number }; }
+interface Offer { id: string; title: string; description: string; initialPrice: number; reducedPrice: number; category: string; image: string; quantity: number; pickupHours: string; restaurantId: string; weightKg: number; featured: boolean; isRecent: boolean; isSurpriseBasket: boolean; }
+interface CartItem { id: string; title: string; imageUrl: string; quantity: number; discountedPrice: number; }
+interface AssociationOrder {
+  id: string;
+  offerId: string;
+  productTitle: string;
+  productImage: string;
+  restaurantId: string;
+  restaurantName: string;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  createdAt: string;
+  status: string;
 }
 
 const MOCK_RESTAURANTS: Restaurant[] = [
@@ -32,14 +42,14 @@ export function useAssociationWorkspace() {
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
-  
   const [offers] = useState<Offer[]>(MOCK_OFFERS);
   const [restaurants] = useState<Restaurant[]>(MOCK_RESTAURANTS);
-  
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [draftQuantity, setDraftQuantity] = useState(1);
+  
+  // 1. On ajoute un état pour stocker l'historique de l'association
+  const [orders, setOrders] = useState<AssociationOrder[]>([]);
 
-  // 1. On rend l'association dynamique avec un état
   const [association, setAssociation] = useState({
     name: 'Club Informatique ESSECT',
     memberCount: 45,
@@ -66,10 +76,36 @@ export function useAssociationWorkspace() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 2. On ajoute la fonction de validation de commande
+  const handleCartCheckout = (cartItems: CartItem[], total: number) => {
+    const newOrders = cartItems.map((item) => {
+      const offer = offers.find(o => o.id === item.id);
+      const rest = getRestaurant(offer?.restaurantId || 'r1');
+      return {
+        id: localId('REQ'),
+        offerId: item.id,
+        productTitle: item.title,
+        productImage: item.imageUrl,
+        restaurantId: offer?.restaurantId || 'r1',
+        restaurantName: rest?.name || 'Commerçant',
+        quantity: item.quantity,
+        unitPrice: item.discountedPrice,
+        totalAmount: item.discountedPrice * item.quantity,
+        createdAt: 'À l’instant',
+        status: 'Confirmée'
+      };
+    });
+
+    setOrders(prev => [...newOrders, ...prev]);
+    showToast(`Commande groupée de ${newOrders.length} article(s) (${total.toFixed(3)} TND) validée !`);
+  };
+
   return {
     currentPage, isKnownPage, mobileMenuOpen, setMobileMenuOpen, toast, showToast, navigateTo,
     offers, restaurants, selectedOffer, getRestaurant, draftQuantity, setDraftQuantity,
-    association, setAssociation // <-- Export de l'état pour le profil
+    association, setAssociation,
+    orders, // <-- Export de l'historique
+    handleCartCheckout // <-- Export de la fonction
   };
 }
 export type AssociationWorkspace = ReturnType<typeof useAssociationWorkspace>;

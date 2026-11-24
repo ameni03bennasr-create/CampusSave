@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/Button';
 import { CheckCircle2, CreditCard } from 'lucide-react';
-import type { StudentPageId } from '@/config/studentPages';
+
 interface CheckoutPageProps {
-  onNavigate: (page: StudentPageId) => void;
+  onNavigate: (page: string) => void;
+  onCheckoutSuccess?: (items: CartItem[], total: number) => void;
 }
 
-const CheckoutPage = ({ onNavigate }: CheckoutPageProps) => {
-  const { getCartTotal, clearCart } = useCart();
+type CartItem = ReturnType<typeof useCart>['cartItems'][number];
+
+const CheckoutPage = ({ onNavigate, onCheckoutSuccess }: CheckoutPageProps) => {
+  const { getCartTotal, clearCart, cartItems } = useCart(); // Récupération de cartItems
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
@@ -17,17 +20,24 @@ const CheckoutPage = ({ onNavigate }: CheckoutPageProps) => {
     setTimeout(() => {
       setIsProcessing(false);
       setIsSuccess(true);
-      clearCart();
+      
+      // On prévient le parent (useStudentWorkspace) de créer les commandes
+      if (onCheckoutSuccess) {
+        onCheckoutSuccess(cartItems, getCartTotal());
+      }
+      
+      clearCart(); // Ensuite on vide le panier
     }, 2000);
   };
 
-   if (isSuccess) {
+  if (isSuccess) {
     return (
-      <div className="max-w-lg mx-auto text-center py-20 bg-white rounded-3xl border border-[#E9C98B] shadow-sm mt-10 px-6">
+      <div className="max-w-lg mx-auto text-center py-20 bg-white rounded-3xl border border-[#E9C98B] shadow-sm mt-10 flex flex-col items-center justify-center">
         <CheckCircle2 className="w-20 h-20 text-[#4C6749] mx-auto mb-6" />
         <h1 className="text-3xl font-extrabold text-stone-800 mb-4">Commande Confirmée !</h1>
-        <p className="text-stone-600 mb-8">Merci pour votre achat. Votre commande est prête.</p>
-        {/* AJOUT DE LA DIV FLEX POUR CENTRER */}
+        <p className="text-stone-600 mb-8">
+          Merci pour votre achat. Votre commande est prête.
+        </p>
         <div className="flex justify-center w-full">
           <Button variant="secondary" onClick={() => onNavigate('orders')}>
             Voir mes commandes
@@ -36,6 +46,7 @@ const CheckoutPage = ({ onNavigate }: CheckoutPageProps) => {
       </div>
     );
   }
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-extrabold text-stone-800 mb-8 text-center">Paiement</h1>
