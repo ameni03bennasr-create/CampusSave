@@ -13,11 +13,7 @@ import '../../widgets/cs_feedback.dart';
 import '../../widgets/cs_inputs.dart';
 import '../../widgets/cs_surfaces.dart';
 
-/// Écran de paiement (Étape 3 sur 3).
-///
-/// Interface honnête et contractuelle : conformément aux directives, aucun faux
-/// succès de paiement n'est simulé côté client sans confirmation par le backend
-/// bancaire (Konnect / Flouci / GPG).
+/// Écran de paiement virtuel (Étape 3 sur 3).
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key, required this.orderId});
 
@@ -36,7 +32,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _paymentMethod = 'card';
   bool _acceptedTerms = false;
-  bool _showNotice = false;
 
   @override
   void dispose() {
@@ -48,16 +43,32 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _onPayPressed() {
-    if (!_formKey.currentState!.validate()) return;
+    if (_paymentMethod == 'card' && !(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
 
     if (!_acceptedTerms) {
       CsToast.show(context, 'Veuillez accepter les conditions de vente.');
       return;
     }
 
-    setState(() {
-      _showNotice = true;
-    });
+    final student = AppScope.of(context).student;
+    final methodLabel = _paymentMethod == 'card'
+        ? 'Carte bancaire (paiement virtuel)'
+        : 'Paiement sur place (comptoir)';
+
+    final updated = student.confirmPayment(widget.orderId, methodLabel);
+    if (updated == null) {
+      CsToast.show(context, 'Impossible de confirmer cette commande.');
+      return;
+    }
+
+    CsToast.show(context, 'Paiement virtuel confirmé — QR Code généré.');
+    AppRouter.push(
+      context,
+      Routes.studentConfirmationQr,
+      args: PageArgs(orderId: updated.id),
+    );
   }
 
   @override
@@ -81,10 +92,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageHeader(
-            title: 'Paiement sécurisé',
+            title: 'Paiement virtuel',
             eyebrow: 'ÉTAPE 3 SUR 3',
             subtitle:
-                'Réglez votre commande pour activer votre QR Code de retrait.',
+                'Validez votre règlement virtuel pour activer votre QR Code de retrait.',
             onBack: () => AppRouter.back(context),
           ),
           const SizedBox(height: 16),
@@ -150,15 +161,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     children: [
                       _buildMethodTile(
                         value: 'card',
-                        title: 'Carte bancaire (En ligne)',
-                        subtitle: 'Paiement sécurisé via passerelle bancaire',
+                        title: 'Carte bancaire (Paiement virtuel)',
+                        subtitle: 'Simulation instantanée de validation du paiement',
                         icon: Icons.credit_card,
                       ),
                       const Divider(height: 16),
                       _buildMethodTile(
                         value: 'counter',
                         title: 'Paiement sur place (Au comptoir)',
-                        subtitle: 'Règlement direct lors de la récupération',
+                        subtitle: 'Validation directe lors de la récupération',
                         icon: Icons.storefront_outlined,
                       ),
                     ],
@@ -177,7 +188,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Coordonnées bancaires',
+                    'Coordonnées bancaires (test / virtuel)',
                     style: AppText.t10(
                       weight: FontWeight.w800,
                       color: AppColors.stone400,
@@ -289,67 +300,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
           const SizedBox(height: 18),
 
-          // --- Alerte honnête Backend Gateway Integration ---
-          if (_showNotice) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.goldSoft(0.3),
-                borderRadius: AppRadii.rXl,
-                border: Border.all(color: AppColors.gold),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        color: AppColors.amberText,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Passerelle bancaire en cours d’intégration',
-                        style: AppText.xs(
-                          weight: FontWeight.w800,
-                          color: AppColors.amberText,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Conformément aux directives CampusSave, les paiements réels sont traités par le service backend (ex. Konnect, Flouci, ClicToPay). Votre commande #${order.id} est bien enregistrée au statut « En attente de paiement ».\n\nDès que le webhook serveur confirme la transaction, votre QR Code de retrait sera immédiatement disponible.',
-                    style: AppText.xs(color: AppColors.stone800, height: 1.5),
-                  ),
-                  const SizedBox(height: 12),
-                  CsButton(
-                    label: 'Consulter ma commande',
-                    variant: CsButtonVariant.secondary,
-                    size: CsButtonSize.small,
-                    onPressed: () {
-                      AppRouter.push(
-                        context,
-                        Routes.studentOrderDetails,
-                        args: PageArgs(orderId: order.id),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-          ],
-
           // --- Bouton de validation ---
           CsButton(
             label:
-                'Confirmer le règlement (${Formatters.price(order.totalAmount)})',
+                'Confirmer le paiement (${Formatters.price(order.totalAmount)})',
             variant: CsButtonVariant.primary,
             size: CsButtonSize.large,
             expand: true,
-            icon: Icons.lock,
+            icon: Icons.check_circle_outline,
             onPressed: _onPayPressed,
           ),
         ],
