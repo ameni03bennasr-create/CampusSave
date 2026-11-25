@@ -1,0 +1,212 @@
+/// Exemple d'implémentation HTTP des repositories CampusSave.
+///
+/// Ce fichier sert de contrat et de modèle d'intégration pour l'équipe Backend.
+/// Il implémente les 4 interfaces abstraites ([AuthRepository], [StudentRepository],
+/// [MerchantRepository], [AdminRepository]) en utilisant des appels REST standard.
+///
+/// Pour l'activer une fois l'API prête :
+/// 1. Ajouter le package `http` ou `dio` dans `pubspec.yaml`
+/// 2. Renommer ce fichier en `http_repositories.dart`
+/// 3. Instancier ces repositories dans `lib/main.dart` et les passer à `AppRoot`.
+library;
+
+import 'dart:convert';
+import '../models/admin_models.dart';
+import '../models/merchant_models.dart';
+import '../models/student_models.dart';
+import 'repositories.dart';
+
+abstract final class ApiEndpoints {
+  static const String baseUrl = 'https://api.campussave.tn/v1';
+
+  // Auth
+  static const String login = '$baseUrl/auth/login';
+  static const String registerStudent = '$baseUrl/auth/register-student';
+  static const String registerMerchant = '$baseUrl/auth/register-merchant';
+  static const String logout = '$baseUrl/auth/logout';
+
+  // Student
+  static const String studentProfile = '$baseUrl/student/profile';
+  static const String restaurants = '$baseUrl/student/restaurants';
+  static const String studentOffers = '$baseUrl/student/offers';
+  static const String studentOrders = '$baseUrl/student/orders';
+  static const String studentOrderCreate = '$baseUrl/student/orders/create';
+  static const String studentNotifications = '$baseUrl/student/notifications';
+
+  // Merchant
+  static const String merchantProfile = '$baseUrl/merchant/profile';
+  static const String merchantEstablishment = '$baseUrl/merchant/establishment';
+  static const String merchantOffers = '$baseUrl/merchant/offers';
+  static const String merchantOrders = '$baseUrl/merchant/orders';
+  static const String merchantQrVerify = '$baseUrl/merchant/orders/verify-qr';
+  static const String merchantNotifications = '$baseUrl/merchant/notifications';
+
+  // Admin
+  static const String adminProfile = '$baseUrl/admin/profile';
+  static const String adminUsers = '$baseUrl/admin/users';
+  static const String adminMerchants = '$baseUrl/admin/merchants';
+  static const String adminMerchantDecision = '$baseUrl/admin/merchants/decision';
+  static const String adminOffers = '$baseUrl/admin/offers';
+  static const String adminOrders = '$baseUrl/admin/orders';
+  static const String adminActivities = '$baseUrl/admin/activities';
+}
+
+/// Client HTTP pour l'authentification REST.
+class HttpAuthRepository implements AuthRepository {
+  HttpAuthRepository({this.authToken});
+
+  String? authToken;
+
+  Map<String, String> get _headers => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (authToken != null) 'Authorization': 'Bearer $authToken',
+  };
+
+  @override
+  Future<void> signIn({required String email, required String password}) async {
+    // Exemple d'appel HTTP (décommenter avec le client HTTP) :
+    // final response = await http.post(
+    //   Uri.parse(ApiEndpoints.login),
+    //   headers: _headers,
+    //   body: jsonEncode({'email': email, 'password': password}),
+    // );
+    // if (response.statusCode != 200) {
+    //   throw AuthException(jsonDecode(response.body)['message'] ?? 'Erreur de connexion');
+    // }
+    // authToken = jsonDecode(response.body)['token'];
+    throw UnimplementedError('API Backend en cours de déploiement');
+  }
+
+  @override
+  Future<void> registerStudent(StudentRegistrationForm form) async {
+    // final response = await http.post(
+    //   Uri.parse(ApiEndpoints.registerStudent),
+    //   headers: _headers,
+    //   body: jsonEncode(form.toJson()),
+    // );
+    // if (response.statusCode != 201) {
+    //   throw AuthException(jsonDecode(response.body)['message'] ?? 'Erreur inscription');
+    // }
+    throw UnimplementedError('API Backend en cours de déploiement');
+  }
+
+  @override
+  Future<void> requestMerchantAccount(MerchantRegistrationForm form) async {
+    // final response = await http.post(
+    //   Uri.parse(ApiEndpoints.registerMerchant),
+    //   headers: _headers,
+    //   body: jsonEncode(form.toJson()),
+    // );
+    // if (response.statusCode != 201) {
+    //   throw AuthException(jsonDecode(response.body)['message'] ?? 'Erreur demande');
+    // }
+    throw UnimplementedError('API Backend en cours de déploiement');
+  }
+
+  @override
+  Future<void> signOut() async {
+    authToken = null;
+  }
+}
+
+/// Client HTTP pour l'espace Étudiant.
+class HttpStudentRepository implements StudentRepository {
+  HttpStudentRepository({required this.authRepository});
+
+  final HttpAuthRepository authRepository;
+
+  @override
+  Future<StudentProfile> loadProfile() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.studentProfile}');
+  }
+
+  @override
+  Future<List<Restaurant>> loadRestaurants() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.restaurants}');
+  }
+
+  @override
+  Future<List<StudentOffer>> loadOffers() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.studentOffers}');
+  }
+
+  @override
+  Future<List<StudentOrder>> loadOrders() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.studentOrders}');
+  }
+
+  @override
+  Future<List<StudentNotification>> loadNotifications() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.studentNotifications}');
+  }
+}
+
+/// Client HTTP pour l'espace Commerçant.
+class HttpMerchantRepository implements MerchantRepository {
+  HttpMerchantRepository({required this.authRepository});
+
+  final HttpAuthRepository authRepository;
+
+  @override
+  Future<MerchantProfile> loadProfile() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.merchantProfile}');
+  }
+
+  @override
+  Future<MerchantEstablishment> loadEstablishment() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.merchantEstablishment}');
+  }
+
+  @override
+  Future<List<MerchantOffer>> loadOffers() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.merchantOffers}');
+  }
+
+  @override
+  Future<List<MerchantOrder>> loadOrders() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.merchantOrders}');
+  }
+
+  @override
+  Future<List<MerchantNotification>> loadNotifications() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.merchantNotifications}');
+  }
+}
+
+/// Client HTTP pour l'espace Administrateur.
+class HttpAdminRepository implements AdminRepository {
+  HttpAdminRepository({required this.authRepository});
+
+  final HttpAuthRepository authRepository;
+
+  @override
+  Future<AdminProfile> loadProfile() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.adminProfile}');
+  }
+
+  @override
+  Future<List<AdminUser>> loadUsers() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.adminUsers}');
+  }
+
+  @override
+  Future<List<AdminMerchant>> loadMerchants() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.adminMerchants}');
+  }
+
+  @override
+  Future<List<AdminOffer>> loadOffers() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.adminOffers}');
+  }
+
+  @override
+  Future<List<AdminOrder>> loadOrders() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.adminOrders}');
+  }
+
+  @override
+  Future<List<AdminActivity>> loadActivities() async {
+    throw UnimplementedError('Brancher sur GET ${ApiEndpoints.adminActivities}');
+  }
+}
