@@ -203,15 +203,19 @@ class MerchantShell extends StatelessWidget {
                       : AppColors.orange,
                 ),
                 const SizedBox(width: 5),
-                Text(
-                  establishment.adminValidated
-                      ? 'Validé par l’Admin'
-                      : 'En attente de validation',
-                  style: AppText.t11(
-                    weight: FontWeight.w700,
-                    color: establishment.adminValidated
-                        ? AppColors.green
-                        : AppColors.orange,
+                Expanded(
+                  child: Text(
+                    establishment.adminValidated
+                        ? 'Validé par l’Admin'
+                        : 'En attente de validation',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.t11(
+                      weight: FontWeight.w700,
+                      color: establishment.adminValidated
+                          ? AppColors.green
+                          : AppColors.orange,
+                    ),
                   ),
                 ),
               ],
