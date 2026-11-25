@@ -1,8 +1,11 @@
+
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/config/firebase';
 import type { AuthUser, UserRole } from '@/context/AuthContext';
 
 const USERS_DB_KEY = 'campusSave_mock_users';
 
-// On définit à quoi ressemble un utilisateur dans notre fausse base de données
+// Anciennes fonctions conservées temporairement pour compatibilité.
 interface MockUser {
   uid: string;
   role: UserRole;
@@ -11,7 +14,6 @@ interface MockUser {
   password: string;
 }
 
-// On définit à quoi ressemble le formulaire d'inscription
 interface StudentForm {
   fullName: string;
   email: string;
@@ -30,29 +32,41 @@ const saveUser = (user: MockUser) => {
 };
 
 export const authService = {
-  async signIn(role: UserRole, email: string, password: string): Promise<AuthUser> {
+  async signIn(
+    role: UserRole,
+    email: string,
+    password: string
+  ): Promise<AuthUser> {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const users = getUsers();
-    const user = users.find((u) => u.email === email && u.password === password);
+    const user = users.find(
+      (u) => u.email === email && u.password === password
+    );
 
     if (!user) {
-      throw new Error("Email ou mot de passe incorrect.");
+      throw new Error('Email ou mot de passe incorrect.');
     }
 
     if (user.role !== role) {
       throw new Error(`Ce compte n'est pas un compte ${role}.`);
     }
 
-    return { uid: user.uid, role: user.role, email: user.email, name: user.name };
+    return {
+      uid: user.uid,
+      role: user.role,
+      email: user.email,
+      name: user.name,
+    };
   },
 
   async signUpStudent(form: StudentForm): Promise<AuthUser> {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const users = getUsers();
+
     if (users.some((u) => u.email === form.email)) {
-      throw new Error("Cet email est déjà utilisé.");
+      throw new Error('Cet email est déjà utilisé.');
     }
 
     const newUser: MockUser = {
@@ -65,11 +79,21 @@ export const authService = {
 
     saveUser(newUser);
 
-    return { uid: newUser.uid, role: 'student', email: newUser.email, name: newUser.name };
+    return {
+      uid: newUser.uid,
+      role: 'student',
+      email: newUser.email,
+      name: newUser.name,
+    };
   },
 
   async sendPasswordReset(email: string): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log(`Email de réinitialisation envoyé à ${email}`);
-  }
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      throw new Error('Veuillez saisir votre adresse email.');
+    }
+
+    await sendPasswordResetEmail(auth, normalizedEmail);
+  },
 };

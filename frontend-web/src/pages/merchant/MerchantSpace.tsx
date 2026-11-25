@@ -1,3 +1,4 @@
+
 import { ClipboardList, Tag } from 'lucide-react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { EstablishmentManagementPage } from '@/pages/merchant/EstablishmentManagementPage';
@@ -18,11 +19,16 @@ import { useMerchantWorkspace } from '@/hooks/useMerchantWorkspace';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ALL_13_PAGES, MERCHANT_BASE_PATH, MERCHANT_DEFAULT_PAGE } from '@/config/merchantPages';
 import { SpaceGate } from '@/routes/SpaceGate';
+import { useAuth } from '@/hooks/useAuth';
+import { registerMerchant } from '@/services/registrationService';
 import { authService } from '@/services/authService';
+
 
 /** Merchant space: composes the workspace state, the layouts and the page switch. */
 export default function MerchantSpace() {
   const ws = useMerchantWorkspace();
+  const { login, logout } = useAuth();
+
   const {
     currentPage,
     isAuthPage,
@@ -56,13 +62,13 @@ export default function MerchantSpace() {
     <MerchantAuthLayout>
       {currentPage === 'register' ? (
         <MerchantRegisterPage
-          onSubmit={(form) => authService.requestMerchantAccount(form)}
+          onSubmit={registerMerchant}
           onGoLogin={() => navigateTo('login')}
         />
       ) : (
         <MerchantLoginPage
           onSubmit={async (email, password) => {
-            await authService.signIn('merchant', email, password);
+            await login('merchant', email, password);
             navigateTo('dashboard');
           }}
           onForgotPassword={(email) => authService.sendPasswordReset(email)}
@@ -95,11 +101,19 @@ export default function MerchantSpace() {
       )}
 
       {currentPage === 'offers' && (
-        <OffersManagementPage offers={offers} onNavigate={navigateTo} onDeleteOffer={handleDeleteOffer} />
+        <OffersManagementPage
+          offers={offers}
+          onNavigate={navigateTo}
+          onDeleteOffer={handleDeleteOffer}
+        />
       )}
 
       {currentPage === 'add-offer' && (
-        <OfferFormPage mode="create" onSubmit={handleAddOffer} onCancel={() => navigateTo('offers')} />
+        <OfferFormPage
+          mode="create"
+          onSubmit={handleAddOffer}
+          onCancel={() => navigateTo('offers')}
+        />
       )}
 
       {currentPage === 'edit-offer' &&
@@ -116,12 +130,14 @@ export default function MerchantSpace() {
           <EmptyState
             icon={Tag}
             title="Aucune offre à modifier"
-            description="Sélectionnez une offre dans « Mes offres » pour la modifier."
+            description="Sélectionnez une offre depuis « Mes offres » pour la modifier."
             action={{ label: 'Voir mes offres', onClick: () => navigateTo('offers') }}
           />
         ))}
 
-      {currentPage === 'orders' && <OrdersManagementPage orders={orders} onNavigate={navigateTo} />}
+      {currentPage === 'orders' && (
+        <OrdersManagementPage orders={orders} onNavigate={navigateTo} />
+      )}
 
       {currentPage === 'order-details' &&
         (selectedOrder ? (
@@ -136,10 +152,15 @@ export default function MerchantSpace() {
         ))}
 
       {currentPage === 'qr-scanner' && (
-        <QrScannerValidationPage initialCode={prefillQrCode} onValidateQr={handleValidateQrCode} />
+        <QrScannerValidationPage
+          initialCode={prefillQrCode}
+          onValidateQr={handleValidateQrCode}
+        />
       )}
 
-      {currentPage === 'statistics' && <MerchantStatisticsPage offers={offers} orders={orders} />}
+      {currentPage === 'statistics' && (
+        <MerchantStatisticsPage offers={offers} orders={orders} />
+      )}
 
       {currentPage === 'notifications' && (
         <MerchantNotificationsPage
@@ -149,7 +170,9 @@ export default function MerchantSpace() {
             showToast('Toutes les notifications ont été marquées comme lues.');
           }}
           onToggleRead={(id) =>
-            setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)))
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
+            )
           }
           onOpenTarget={(page, targetId) => {
             if (page === 'order-details') navigateTo('order-details', { orderId: targetId });
@@ -167,7 +190,7 @@ export default function MerchantSpace() {
             showToast('Paramètres du compte commerçant enregistrés.');
           }}
           onLogout={async () => {
-            await authService.signOut();
+            await logout();
             navigateTo('login');
           }}
         />

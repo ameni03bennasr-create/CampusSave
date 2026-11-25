@@ -1,4 +1,4 @@
-import {
+﻿import {
   ChevronLeft,
   Clock,
   MapPin,
@@ -13,7 +13,7 @@ import type { Restaurant, StudentOffer, StudentProfile } from '@/types/student';
 import type { Dispatch, SetStateAction } from 'react';
 
 // ============================================================================
-// PAGE 06 – RÉSERVATION
+// PAGE 06 â€“ RÃ‰SERVATION
 // ============================================================================
 interface ReservationPageProps {
   offer: StudentOffer;
@@ -22,6 +22,7 @@ interface ReservationPageProps {
   setQuantity: Dispatch<SetStateAction<number>>;
   student: StudentProfile;
   onConfirmReservation: () => void;
+  isSubmitting?: boolean;
   onNavigate: (page: "register" | "login" | "home" | "explore" | "offer-details" | "reservation" | "order-summary" | "payment" | "confirmation-qr" | "orders" | "order-details" | "profile" | "notifications" | "statistics", options?: StudentNavigateOptions) => void;
 }
 
@@ -32,6 +33,7 @@ export function ReservationPage({
   setQuantity,
   student,
   onConfirmReservation,
+  isSubmitting = false,
   onNavigate
 }: ReservationPageProps) {
   const totalAmount = offer.reducedPrice * quantity;
@@ -43,24 +45,24 @@ export function ReservationPage({
         className="inline-flex items-center gap-2 text-sm font-bold text-stone-600 hover:text-[#A84F32]"
       >
         <ChevronLeft className="w-4 h-4" />
-        Modifier la sélection
+        Modifier la sÃ©lection
       </button>
 
       <div>
         <span className="text-xs font-bold uppercase tracking-wider text-[#A84F32]">
-          Étape 1 sur 3 • Réservation
+          Ã‰tape 1 sur 3 â€¢ RÃ©servation
         </span>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">
-          Configurer votre réservation
+          Configurer votre rÃ©servation
         </h1>
         <p className="text-sm text-stone-500">
-          Vérifiez la quantité et le créneau de retrait avant de passer au récapitulatif.
+          VÃ©rifiez la quantitÃ© et le crÃ©neau de retrait avant de passer au rÃ©capitulatif.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-5">
-          {/* Produit sélectionné */}
+          {/* Produit sÃ©lectionnÃ© */}
           <div className="bg-white rounded-2xl p-5 border border-[#E9C98B]/60 flex items-center gap-4">
             <SafeImage
               src={offer.image}
@@ -73,7 +75,7 @@ export function ReservationPage({
                 {offer.title}
               </h2>
               <p className="text-xs text-stone-500 mt-1">
-                Prix unitaire réduit :{' '}
+                Prix unitaire rÃ©duit :{' '}
                 <strong className="text-[#4C6749]">{formatPrice(offer.reducedPrice)}</strong>{' '}
                 <span className="line-through text-stone-400">
                   ({formatPrice(offer.initialPrice)})
@@ -82,12 +84,12 @@ export function ReservationPage({
             </div>
           </div>
 
-          {/* Ajustement de quantité */}
+          {/* Ajustement de quantitÃ© */}
           <div className="bg-white rounded-2xl p-5 border border-[#E9C98B]/60 flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-stone-900 text-sm">Quantité réservée</h3>
+              <h3 className="font-bold text-stone-900 text-sm">QuantitÃ© rÃ©servÃ©e</h3>
               <p className="text-xs text-stone-500">
-                Stock disponible chez le commerçant : {offer.quantity}
+                Stock disponible chez le commerÃ§ant : {offer.quantity}
               </p>
             </div>
             <div className="inline-flex items-center rounded-xl border border-stone-200 bg-[#F8F1E7] p-1">
@@ -111,10 +113,10 @@ export function ReservationPage({
             </div>
           </div>
 
-          {/* Informations Restaurant & Créneau de retrait */}
+          {/* Informations Restaurant & CrÃ©neau de retrait */}
           <div className="bg-white rounded-2xl p-5 border border-[#E9C98B]/60 space-y-3">
             <h3 className="font-bold text-stone-900 text-sm">
-              Informations de récupération sur place
+              Informations de rÃ©cupÃ©ration sur place
             </h3>
             <div className="p-3.5 rounded-xl bg-[#F8F1E7] space-y-2 text-xs text-stone-700">
               <p className="flex items-center gap-2 font-semibold">
@@ -127,32 +129,32 @@ export function ReservationPage({
               </p>
               <p className="flex items-center gap-2 font-bold text-[#4C6749]">
                 <Clock className="w-4 h-4" />
-                Créneau obligatoire aujourd’hui : {offer.pickupHours}
+                CrÃ©neau obligatoire aujourdâ€™hui : {offer.pickupHours}
               </p>
             </div>
             <p className="text-xs text-stone-500">
-              Réservation au nom de : <strong className="text-stone-800">{student.fullName}</strong> ({student.phone})
+              RÃ©servation au nom de : <strong className="text-stone-800">{student.fullName}</strong> ({student.phone})
             </p>
           </div>
         </div>
 
-        {/* Encart Résumé de réservation */}
+        {/* Encart RÃ©sumÃ© de rÃ©servation */}
         <div className="lg:col-span-5">
           <div className="bg-white rounded-2xl p-6 border border-[#E9C98B] shadow-sm sticky top-24 space-y-4">
             <h3 className="font-extrabold text-stone-900 text-lg">
-              Résumé de réservation
+              RÃ©sumÃ© de rÃ©servation
             </h3>
             <div className="space-y-2.5 text-sm border-y border-stone-100 py-4">
               <div className="flex justify-between text-stone-600">
-                <span>Prix unitaire réduit</span>
+                <span>Prix unitaire rÃ©duit</span>
                 <span className="font-semibold">{formatPrice(offer.reducedPrice)}</span>
               </div>
               <div className="flex justify-between text-stone-600">
-                <span>Quantité</span>
-                <span className="font-semibold">× {quantity}</span>
+                <span>QuantitÃ©</span>
+                <span className="font-semibold">Ã— {quantity}</span>
               </div>
               <div className="flex justify-between text-[#4C6749] text-xs font-bold">
-                <span>Économie réalisée</span>
+                <span>Ã‰conomie rÃ©alisÃ©e</span>
                 <span>
                   -{formatPrice((offer.initialPrice - offer.reducedPrice) * quantity)}
                 </span>
@@ -168,13 +170,14 @@ export function ReservationPage({
 
             <button
               onClick={onConfirmReservation}
-              className="w-full py-3.5 px-5 rounded-xl bg-[#A84F32] hover:bg-[#8E4128] text-white font-bold text-sm shadow-md transition-all"
+              disabled={isSubmitting}
+              className="w-full py-3.5 px-5 rounded-xl bg-[#A84F32] hover:bg-[#8E4128] text-white font-bold text-sm shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Confirmer la réservation
+              {isSubmitting ? 'Création de la réservation...' : 'Confirmer la réservation'}
             </button>
 
             <p className="text-[11px] text-stone-400 text-center leading-relaxed">
-              Le QR Code de retrait sera généré immédiatement après la confirmation du paiement électronique.
+              Le QR Code de retrait sera gÃ©nÃ©rÃ© immÃ©diatement aprÃ¨s la confirmation du paiement Ã©lectronique.
             </p>
           </div>
         </div>
@@ -182,3 +185,5 @@ export function ReservationPage({
     </div>
   );
 }
+
+

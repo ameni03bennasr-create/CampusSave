@@ -1,6 +1,7 @@
+
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ALL_12_PAGES } from '@/config/adminPages'
 import { ALL_13_PAGES } from '@/config/merchantPages'
 import { ALL_14_PAGES } from '@/config/studentPages'
@@ -23,6 +24,7 @@ describe('public landing page', () => {
     expect(screen.getAllByText('Commerçant').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Administrateur').length).toBeGreaterThan(0)
   })
+
   it('shows a 404 page for unknown addresses', async () => {
     renderApp('/nope')
     expect(await screen.findByText('Page introuvable')).toBeInTheDocument()
@@ -69,13 +71,31 @@ describe('role guards (production behaviour)', () => {
 })
 
 describe('authentication is never simulated', () => {
-  it('student login with valid-looking credentials fails honestly and stays on the page', async () => {
+  it('student login with invalid Firebase credentials shows an error and stays on the page', async () => {
     const user = userEvent.setup()
-    renderApp('/student/login')
-    await user.type(await screen.findByPlaceholderText('votre.adresse@exemple.com'), 'someone@example.com')
-    await user.type(screen.getByPlaceholderText('••••••••'), 'secret123')
+
+    const auth = {
+      ...ANONYMOUS,
+      login: vi.fn().mockRejectedValue(
+        new Error('Firebase: Error (auth/invalid-credential).')
+      ),
+    }
+
+    renderApp('/student/login', auth)
+
+    await user.type(
+      await screen.findByPlaceholderText('votre.adresse@exemple.com'),
+      'someone@example.com'
+    )
+
+    await user.type(
+      screen.getByPlaceholderText('••••••••'),
+      'secret123'
+    )
+
     await user.click(screen.getByRole('button', { name: /Se connecter/ }))
-    expect(await screen.findByText(/service d’authentification n’est pas encore connecté/)).toBeInTheDocument()
+
+    expect(await screen.findByText(/auth\/invalid-credential/)).toBeInTheDocument()
     expect(where()).toBe('/student/login')
   })
 
@@ -83,9 +103,11 @@ describe('authentication is never simulated', () => {
     for (const path of ['/student/login', '/merchant/login', '/admin/login']) {
       const { unmount } = renderApp(path)
       await screen.findByRole('button', { name: /Se connecter/ })
+
       for (const input of document.querySelectorAll('input[type="email"], input[type="password"], input[type="text"]')) {
         expect((input as HTMLInputElement).value).toBe('')
       }
+
       unmount()
     }
   })
@@ -114,18 +136,23 @@ describe('no demo navigation', () => {
   })
 })
 
-// Every one of the 39 original pages must still mount at its own URL (signed in with the matching role).
+// All 41 pages (16 student + 13 merchant + 12 admin) must mount at their own URL.
 const AUTH_PAGES = new Set(['student/login', 'student/register', 'merchant/login', 'merchant/register', 'admin/login'])
+
 const allPages = [
   ...ALL_14_PAGES.map((p) => ({ space: 'student' as const, ...p })),
   ...ALL_13_PAGES.map((p) => ({ space: 'merchant' as const, ...p })),
   ...ALL_12_PAGES.map((p) => ({ space: 'admin' as const, ...p })),
 ]
-describe('all 39 pages mount at their URL', () => {
-  it('registry still has 39 pages', () => expect(allPages).toHaveLength(39))
+
+describe('all 41 pages mount at their URL', () => {
+  it('registry still has 41 pages', () => expect(allPages).toHaveLength(41))
+
   it.each(allPages.map((p) => [`${p.space}/${p.id}`, p] as const))('%s', async (key, p) => {
     const auth = AUTH_PAGES.has(key) ? ANONYMOUS : asRole(p.space)
+
     renderApp(`/${p.space}/${p.id}`, auth)
+
     await waitFor(() => expect(screen.getByRole('main')).toBeInTheDocument())
     expect(where()).toBe(`/${p.space}/${p.id}`)
     expect(screen.queryByText('Une erreur est survenue')).not.toBeInTheDocument()
